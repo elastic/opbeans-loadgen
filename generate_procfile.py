@@ -11,7 +11,7 @@ def create_procfile(env_string):
             '-', ''
         )  # we use second part of name and strip all remaining dashes
         sys.stdout.write(
-            '{0}: PYTHONUNBUFFERED=1 OPBEANS_BASE_URL={1} OPBEANS_NAME={2} molotov --duration {3} --delay 0.6 --uvloop molotov_scenarios.py\n'.format(
+            '{0}: OPBEANS_BASE_URL={1} OPBEANS_NAME={2} molotov -v --duration {3} --delay 0.6 --uvloop molotov_scenarios.py\n'.format(
                 process_name,
                 service_url,
                 service_name,
