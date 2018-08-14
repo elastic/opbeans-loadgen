@@ -1,12 +1,10 @@
 import sys
-from urllib.parse import urlparse
 
 
 def create_procfile(env_string):
     services = env_string.split(',')
-    for service_url in services:
-        parsed_url = urlparse(service_url)
-        service_name = parsed_url.netloc.split(':')[0]
+    for service in services:
+        service_name, service_url = service.split(':', maxsplit=1)
         process_name = service_name.split('-', maxsplit=1)[1].replace(
             '-', ''
         )  # we use second part of name and strip all remaining dashes
