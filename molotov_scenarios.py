@@ -167,6 +167,31 @@ if SERVICE_NAME == 'opbeans-node':
             assert resp.status == 200
 
 
+if SERVICE_NAME == 'opbeans-ruby':
+    @scenario(weight=2)
+    async def scenario_log_error(session):
+        async with session.get(join(SERVER_URL, 'log-error')) as resp:
+            assert resp.status == 500
+
+
+    @scenario(weight=2)
+    async def scenario_log_message(session):
+        async with session.get(join(SERVER_URL, 'log-message')) as resp:
+            assert resp.status == 500
+
+
+    @scenario(weight=1)
+    async def scenario_is_it_coffee_time_typo(session):
+        async with session.get(join(SERVER_URL, 'is-it-coffee-time')) as resp:
+            assert resp.status == 500
+
+
+    @scenario(weight=1)
+    async def scenario_throw_error(session):
+        async with session.get(join(SERVER_URL, 'throw-error')) as resp:
+            assert resp.status == 500
+
+
 def join(base_url, *fragments):
         path = '/'.join(fragments)
         return urljoin(base_url, path)
