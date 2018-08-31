@@ -111,7 +111,7 @@ async def scenario_orders_post(session):
 
 
 if SERVICE_NAME == 'opbeans-python':
-    @scenario(weight=8)
+    @scenario(weight=1)
     async def scenario_oopsie(session):
         async with session.get(join(SERVER_URL, 'oopsie')) as resp:
             assert resp.status == 500
