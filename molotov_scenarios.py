@@ -11,7 +11,7 @@ SERVER_URL = os.environ.get('OPBEANS_BASE_URL', 'http://localhost:8000')
 SERVICE_NAME = os.environ.get('OPBEANS_NAME', 'default')
 
 
-@scenario(weight=10)
+@scenario(weight=2)
 async def scenario_root(session):
     async with session.get(SERVER_URL) as resp:
         assert resp.status == 200, resp.status
