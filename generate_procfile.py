@@ -3,7 +3,12 @@ import sys
 
 def create_procfile(service_env_string, rpm_env_string='', *args):
     services = service_env_string.split(',')
-    rpms = {service_name: int(rpm) for service_name, rpm in (entry.split(':') for entry in rpm_env_string.split(','))}
+    if rpm_env_string:
+        rpms = {
+            service_name: int(rpm) for service_name, rpm in (entry.split(':') for entry in rpm_env_string.split(','))
+        }
+    else:
+        rpms = {}
     for service in services:
         service_name, service_url = service.split(':', maxsplit=1)
         process_name = service_name.split('-', maxsplit=1)[1].replace(
