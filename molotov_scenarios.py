@@ -11,7 +11,7 @@ from molotov import scenario, setup_session, global_setup
 SERVER_URL = os.environ.get('OPBEANS_BASE_URL', 'http://localhost:8000')
 SERVICE_NAME = os.environ.get('OPBEANS_NAME', 'default')
 REAL_IP_HEADER = os.environ.get('REAL_IP_HEADER','HTTP_X_FORWARDED_FOR')
-NUMBER_OF_IPS = int(os.environ.get('NUMBER_OF_IPS','100'))
+NUMBER_OF_IPS = int(os.environ.get('NUM_OF_IPS','100'))
 RANDOM_IPS=set()
 
 @global_setup()
