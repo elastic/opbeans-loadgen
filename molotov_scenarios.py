@@ -22,7 +22,7 @@ def init_test(args):
 
 @setup_session()
 async def init_session(worker_num, session):
-    session._default_headers = {REAL_IP_HEADER: random.choice(RANDOM_IPS)}
+    session._default_headers = {REAL_IP_HEADER: random.choice(list(RANDOM_IPS))}
 
 
 @scenario(weight=2)
