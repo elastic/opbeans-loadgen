@@ -1,7 +1,7 @@
 import sys
 
 
-def create_procfile(service_env_string, rpm_env_string='',rls_env_string='', *args):
+def create_procfile(service_env_string, rpm_env_string='',rls_env_string='', num_workers="", num_of_ips="", ip_header="X-Forwarded-For", *args):
     services = service_env_string.split(',')
     if rpm_env_string:
         rpms = {
@@ -25,12 +25,15 @@ def create_procfile(service_env_string, rpm_env_string='',rls_env_string='', *ar
         delay = 60.0 / rpms.get(service_name, 100)
         run_length = rls.get(service_name, 365 * 24 * 60 * 60)
         sys.stdout.write(
-            '{0}: OPBEANS_BASE_URL={1} OPBEANS_NAME={2} molotov -v --duration {3} --delay {4:.3f} --uvloop molotov_scenarios.py\n'.format(
+            '{0}: OPBEANS_BASE_URL={1} OPBEANS_NAME={2} NUM_OF_IPS={6} REAL_IP_HEADER={7} molotov -v --duration {3} --delay {4:.3f} --workers {5} --uvloop molotov_scenarios.py\n'.format(
                 process_name,
                 service_url,
                 service_name,
                 run_length,
                 delay,
+                1 if num_workers == "" else int(num_workers),
+                100 if num_of_ips == "" else int(num_of_ips),
+                "HTTP_X_FORWARDED_FOR" if ip_header == "" else ip_header,
             )
         )
     sys.stdout.flush()

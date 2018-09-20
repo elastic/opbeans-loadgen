@@ -3,12 +3,26 @@ import os
 import random
 import json
 from urllib.parse import urljoin
+from faker import Faker
 
 from aiohttp import FormData
-from molotov import scenario
+from molotov import scenario, setup_session, global_setup
 
 SERVER_URL = os.environ.get('OPBEANS_BASE_URL', 'http://localhost:8000')
 SERVICE_NAME = os.environ.get('OPBEANS_NAME', 'default')
+REAL_IP_HEADER = os.environ.get('REAL_IP_HEADER','X-Forwarded-For')
+NUMBER_OF_IPS = int(os.environ.get('NUM_OF_IPS','100'))
+RANDOM_IPS=set()
+
+@global_setup()
+def init_test(args):
+    fake = Faker()
+    while len(RANDOM_IPS) < NUMBER_OF_IPS:
+        RANDOM_IPS.add(fake.ipv4_public(network=False, address_class=None))
+
+@setup_session()
+async def init_session(worker_num, session):
+    session._default_headers = {REAL_IP_HEADER: random.choice(list(RANDOM_IPS))}
 
 
 @scenario(weight=2)
