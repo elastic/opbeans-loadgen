@@ -18,7 +18,6 @@ RANDOM_IPS=set()
 def init_test(args):
     fake = Faker()
     while len(RANDOM_IPS) < NUMBER_OF_IPS:
-        print(len(RANDOM_IPS))
         RANDOM_IPS.add(fake.ipv4_public(network=False, address_class=None))
 
 @setup_session()
