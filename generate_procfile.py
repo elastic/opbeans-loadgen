@@ -1,7 +1,7 @@
 import sys
 
 
-def create_procfile(service_env_string, rpm_env_string='',rls_env_string='', num_workers="", num_of_ips="", ip_header="HTTP_X_FORWARDED_FOR", *args):
+def create_procfile(service_env_string, rpm_env_string='',rls_env_string='', num_workers="", num_of_ips="", ip_header="X-Forwarded-For", *args):
     services = service_env_string.split(',')
     if rpm_env_string:
         rpms = {
