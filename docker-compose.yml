@@ -1,0 +1,31 @@
+version: "2.1"
+services:
+  opbeans-loadgen:
+    build: .
+    image: opbeans/opbeans-loadgen:latest
+    container_name: opbeans-loadgen
+    logging:
+      driver: 'json-file'
+      options:
+          max-size: '2m'
+          max-file: '5'
+    links:
+       - opbeans-dotnet
+    environment:
+      - OPBEANS_URLS=opbeans-dotnet:http://opbeans-dotnet:80
+    depends_on:
+      opbeans-dotnet:
+        condition: service_healthy
+
+  opbeans-dotnet:
+    image: opbeans/opbeans-dotnet:latest
+    container_name: opbeans-dotnet
+    logging:
+      driver: 'json-file'
+      options:
+          max-size: '2m'
+          max-file: '5'
+    healthcheck:
+      test: ["CMD", "curl", "--write-out", "'HTTP %{http_code}'", "--silent", "--output", "/dev/null", "http://opbeans-dotnet:80/"]
+      interval: 10s
+      retries: 10
