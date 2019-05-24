@@ -8,6 +8,7 @@ pipeline {
     NOTIFY_TO = credentials('notify-to')
     JOB_GCS_BUCKET = credentials('gcs-bucket')
     JOB_GCS_CREDENTIALS = 'apm-ci-gcs-plugin'
+    DOCKERHUB_SECRET = 'secret/apm-team/ci/elastic-observability-dockerhub'
     PIPELINE_LOG_LEVEL = 'INFO'
   }
   options {
@@ -70,6 +71,36 @@ pipeline {
               junit(allowEmptyResults: true,
                 keepLongStdio: true,
                 testResults: "${BASE_DIR}/**/junit-*.xml")
+            }
+          }
+        }
+        stage('Release') {
+          input {
+            message 'Should we release a new version?'
+            ok 'Yes, we should.'
+            parameters {
+              string(name: 'VERSION', defaultValue: 'latest', description: 'What tag?')
+            }
+          }
+          when {
+            beforeAgent true
+            allOf {
+              anyOf {
+                branch 'master'
+                branch "\\d+\\.\\d+"
+                branch "v\\d?"
+                tag "v\\d+\\.\\d+\\.\\d+*"
+                expression { return params.Run_As_Master_Branch }
+              }
+            }
+          }
+          steps {
+            deleteDir()
+            unstash 'source'
+            dir("${BASE_DIR}"){
+              dockerLogin(secret: "${DOCKERHUB_SECRET}", registry: 'docker.io') {
+                sh "VERSION=${VERSION} make publish"
+              }
             }
           }
         }
