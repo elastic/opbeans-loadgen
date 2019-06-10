@@ -1,3 +1,5 @@
+[![Build Status](https://apm-ci.elastic.co/job/apm-agent-python/job/opbeans-loadgen-mbp/job/master/badge/icon)](https://apm-ci.elastic.co/job/apm-agent-python/job/opbeans-loadgen-mbp/job/master/)
+
 # Opbeans Load Generator
 
 This is a load generator for [Opbeans](https://github.com/elastic?utf8=%E2%9C%93&q=Opbeans&type=&language=) as a Docker container.
