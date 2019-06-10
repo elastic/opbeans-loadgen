@@ -24,7 +24,8 @@ CONTAINER="opbeans-loadgen"
 }
 
 @test "test container ran with success" {
-	sleep 10
+	# Docker container might take a bit to be up and running. Let's wait a bit
+	sleep 30
 	run docker logs $CONTAINER
 	assert_output --partial 'SUCCESSES: 1'
 }
