@@ -1,6 +1,6 @@
 ---
 - job:
-    name: apm-agent-loadgen/opbeans-loadgen-mbp
+    name: apm-agent-python/opbeans-loadgen-mbp
     display-name: Opbeans Loadgen
     description: Opbeans Loadgen
     project-type: multibranch
