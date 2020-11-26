@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import subprocess
 
 from app.api import bp
@@ -7,7 +8,7 @@ from app import socketio
 from flask import request
 
 
-DEBUG = True
+DEBUG = os.environ.get('DYNO_DEBUG')
 
 
 @bp.route('/list', methods=['GET'])
