@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template
-from flask_socketio import SocketIO, emit
-
-
+from flask_socketio import SocketIO
 from app.cfg import Config as Cfg
 
 

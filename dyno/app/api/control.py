@@ -4,9 +4,7 @@ import subprocess
 
 from app.api import bp
 from app import socketio
-
 from flask import request
-
 
 DEBUG = os.environ.get('DYNO_DEBUG')
 
