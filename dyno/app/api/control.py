@@ -45,6 +45,7 @@ def stop_job():
     if job in JOB_MANAGER:
         p = JOB_MANAGER[job]
         p.kill()
+        JOB_MANAGER[job] = None
     if job in JOB_STATUS:
         j = JOB_STATUS[job]
         j['running'] = False
