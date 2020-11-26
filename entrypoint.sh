@@ -5,7 +5,7 @@ python3 generate_procfile.py "$OPBEANS_URLS" "$OPBEANS_RPMS" "$OPBEANS_RLS" > Pr
 
 if [ $WS ];
 then
-    echo "starting webserver..."
+    echo "Starting webserver..."
     gunicorn -b 0.0.0.0 app:app --capture-output  -t 90 -w 8
 else
     echo "Starting load tests..."
