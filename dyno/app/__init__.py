@@ -22,8 +22,3 @@ app.register_blueprint(api_bp, url_prefix='/api')
 @app.route('/')
 def index():
     return render_template("index.html")
-
-
-@socketio.on('connect')
-def test_connect():
-    emit('after connect',  {'data':'Lets dance'})
