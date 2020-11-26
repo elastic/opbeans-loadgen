@@ -19,6 +19,6 @@ from app.api import bp as api_bp  # noqa E402
 app.register_blueprint(api_bp, url_prefix='/api')
 
 
-@app.route('/')
+@app.route('/log')
 def index():
     return render_template("index.html")
