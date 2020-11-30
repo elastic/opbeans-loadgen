@@ -6,6 +6,7 @@ COPY requirements.txt /app/
 RUN /app/venv/bin/pip install -r requirements.txt
 
 COPY molotov_scenarios.py entrypoint.sh generate_procfile.py /app/
+COPY dyno /app/dyno
 
 FROM python:3.7-slim
 ## Required as the slim version is too tiny

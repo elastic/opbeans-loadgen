@@ -20,7 +20,7 @@ def start_job():
     if DEBUG:
         cmd = ['sleep', '10']
     else:
-        cmd = ['honcho', 'start', job]
+        cmd = ['honcho', 'start', job, '-f', '../../Procfile']
     JOB_STATUS[job]['running'] = True
     socketio.emit('service_state', {'data': {job: 'start'}})
 
@@ -61,15 +61,18 @@ def fetch_configured_jobs():
     with open("../Procfile", "r") as fh_:
         p = fh_.readlines()
     for line in p:
-        pname, url, name, _ = line.split(maxsplit=3)
-        _, url = url.split('=')
-        _, name = name.split('=')
-        ret[pname[:-1]] = {
-            'url': url,
-            'name': name,
-            'running': False,
-            'p': None
-            }
+        try:
+            pname, url, name, _ = line.split(maxsplit=3)
+            _, url = url.split('=')
+            _, name = name.split('=')
+            ret[pname[:-1]] = {
+                'url': url,
+                'name': name,
+                'running': False,
+                'p': None
+                }
+        except ValueError:
+            continue
     return ret
 
 

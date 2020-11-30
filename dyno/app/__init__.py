@@ -11,7 +11,7 @@ def create_app(config_class=Cfg):
 
 
 app = create_app()
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins='http://localhost:9000')
 
 from app.api import bp as api_bp  # noqa E402
 app.register_blueprint(api_bp, url_prefix='/api')
