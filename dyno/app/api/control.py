@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import subprocess
+import signal
 
 from app.api import bp
 from app import socketio
@@ -17,17 +18,18 @@ def get_list():
 @bp.route('/start', methods=['GET'])
 def start_job():
     job = request.args.get('job')
+
     if DEBUG:
         cmd = ['sleep', '10']
     else:
-        cmd = ['honcho', 'start', job, '-f', '../../Procfile']
+        cmd = ['honcho', 'start', job, '-f', 'Procfile']
     JOB_STATUS[job]['running'] = True
     socketio.emit('service_state', {'data': {job: 'start'}})
 
     # “I may not have gone where I intended to go, but I think I have ended up
     # where I needed to be.”
     # ― Douglas Adams, The Long Dark Tea-Time of the Soul
-    p = subprocess.Popen(cmd)
+    p = subprocess.Popen(cmd, cwd="../", preexec_fn=os.setsid)
 
     JOB_MANAGER[job] = p
     JOB_STATUS[job]['running'] = False
@@ -44,7 +46,7 @@ def stop_job():
     socketio.emit('service_state', {'data': {job: 'stop'}})
     if job in JOB_MANAGER:
         p = JOB_MANAGER[job]
-        p.kill()
+        os.killpg(os.getpgid(p.pid), signal.SIGTERM)
         JOB_MANAGER[job] = None
     if job in JOB_STATUS:
         j = JOB_STATUS[job]

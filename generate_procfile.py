@@ -1,7 +1,12 @@
+import os
 import sys
 
 
 def create_procfile(service_env_string, rpm_env_string='',rls_env_string='', *args):
+    if os.environ.get('WS'):
+        cmd = '{0}: OPBEANS_BASE_URL={1} OPBEANS_NAME={2} molotov -v --duration {3} --delay {4:.3f} --uvloop --statsd --statsd-address udp://stats-d:8125 molotov_scenarios.py\n'
+    else:
+        cmd = '{0}: OPBEANS_BASE_URL={1} OPBEANS_NAME={2} molotov -v --duration {3} --delay {4:.3f} --uvloop molotov_scenarios.py\n'
     services = service_env_string.split(',')
     if rpm_env_string:
         rpms = {
@@ -29,7 +34,7 @@ def create_procfile(service_env_string, rpm_env_string='',rls_env_string='', *ar
         delay = 60.0 / rpms.get(service_name, 100)
         run_length = rls.get(service_name, 365 * 24 * 60 * 60)
         sys.stdout.write(
-            '{0}: OPBEANS_BASE_URL={1} OPBEANS_NAME={2} molotov -v --duration {3} --delay {4:.3f} --uvloop molotov_scenarios.py\n'.format(
+            cmd.format(
                 process_name,
                 service_url,
                 service_name,
