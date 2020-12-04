@@ -3,6 +3,8 @@ import os
 import subprocess
 import signal
 
+from pathlib import Path
+
 from app.api import bp
 from app import socketio
 from flask import request
@@ -15,14 +17,51 @@ def get_list():
     return JOB_STATUS
 
 
+@bp.route('/scenarios', methods=['GET'])
+def get_scenarios():
+    """
+    Fetch a list of scenarios
+    """
+    ret = {'scenarios': []}
+    files = os.listdir("../scenarios/")
+    for file in files:
+        base_name = Path(file).stem
+        ret['scenarios'].append(base_name)
+    return ret
+
+
+
+
 @bp.route('/start', methods=['GET'])
 def start_job():
     job = request.args.get('job')
+    scenario = request.args.get('scenario')
+    duration = request.args.get('duration')
+    delay = request.args.get('delay')
+
+    defaults = {
+        "duration": "31536000",
+        "delay": "0.600",
+        "scenario": "molotov_scenarios.py"
+    }
 
     if DEBUG:
         cmd = ['sleep', '10']
     else:
-        cmd = ['honcho', 'start', job, '-f', 'Procfile']
+        cmd = [
+            "/app/venv/bin/python",
+            "/app/venv/bin/molotov",
+            "-v",
+            "--duration",
+            duration or defaults["duration"],
+            "--delay",
+            delay or defaults["delay"],
+            "--uvloop",
+            "--statsd",
+            "--statsd-address",
+            "udp://stats-d:8125",
+            scenario or defaults["scenario"]
+            ]
     JOB_STATUS[job]['running'] = True
     socketio.emit('service_state', {'data': {job: 'start'}})
 
