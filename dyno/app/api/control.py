@@ -30,20 +30,29 @@ def get_scenarios():
     return ret
 
 
+def _construct_toxi_env(job, port):
+    toxi_env = os.environ.copy()
+    toxi_env['OPBEANS_BASE_URL'] = "http://toxi:{}".format(port)
+    toxi_env['OPBEANS_NAME'] = job
+    return toxi_env
 
 
 @bp.route('/start', methods=['GET'])
 def start_job():
     job = request.args.get('job')
+    port = request.args.get('port')
     scenario = request.args.get('scenario')
     duration = request.args.get('duration')
     delay = request.args.get('delay')
+
+    job = job.replace('opbeans-', '')
 
     defaults = {
         "duration": "31536000",
         "delay": "0.600",
         "scenario": "molotov_scenarios.py"
     }
+    toxi_env = _construct_toxi_env(job, port)
 
     if DEBUG:
         cmd = ['sleep', '10']
@@ -68,11 +77,8 @@ def start_job():
     # “I may not have gone where I intended to go, but I think I have ended up
     # where I needed to be.”
     # ― Douglas Adams, The Long Dark Tea-Time of the Soul
-    p = subprocess.Popen(cmd, cwd="../", preexec_fn=os.setsid)
-
+    p = subprocess.Popen(cmd, cwd="../", preexec_fn=os.setsid, env=toxi_env)
     JOB_MANAGER[job] = p
-    JOB_STATUS[job]['running'] = False
-    socketio.emit('service_state', {'data': {job: 'stop'}})
     return {}
 
 
@@ -82,6 +88,7 @@ def stop_job():
     Find the job and kill it with fire
     """
     job = request.args.get('job')
+    job = job.replace('opbeans-', '')
     socketio.emit('service_state', {'data': {job: 'stop'}})
     if job in JOB_MANAGER:
         p = JOB_MANAGER[job]
