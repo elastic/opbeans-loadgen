@@ -1,9 +1,9 @@
 .idea
+*.swp
+Procfile
 # For the BATS testing
 bats/
 target/
-Procfile
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
