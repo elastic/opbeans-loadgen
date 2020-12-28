@@ -38,3 +38,4 @@ def create_procfile(service_env_string, rpm_env_string='',rls_env_string='', *ar
 
 if __name__ == '__main__':
     create_procfile(*sys.argv[1:])
+
