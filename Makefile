@@ -26,6 +26,7 @@ test: prepare-test ## Run the tests
 	@bats/bin/bats --tap tests | tee target/results.tap
 	@docker run --rm -v "${PWD}":/usr/src/app -w /usr/src/app node:${LTS_ALPINE} \
 					sh -c "npm install tap-xunit -g && cat target/results.tap | tap-xunit --package='co.elastic.opbeans' > target/junit-results.xml"
+	@pytest
 
 publish: build ## Publish docker image
 	@docker push opbeans/opbeans-loadgen:${VERSION}

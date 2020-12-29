@@ -3,4 +3,4 @@ from flask import Blueprint
 
 bp = Blueprint('api', __name__)
 
-from app.api import control  # noqa E402
+from . import control  # noqa E402

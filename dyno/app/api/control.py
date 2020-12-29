@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 import subprocess
 import signal
 
 from pathlib import Path
 
-from app.api import bp
-from app import socketio
+from . import bp
+import socketio
 from flask import request
 
 DEBUG = os.environ.get('DYNO_DEBUG')
@@ -23,7 +24,10 @@ def get_scenarios():
     Fetch a list of scenarios
     """
     ret = {'scenarios': []}
-    files = os.listdir("../scenarios/")
+    cur_dir = os.path.dirname(os.path.realpath(__file__)) 
+    scenario_dir = os.path.join(cur_dir, "../../../scenarios")
+
+    files = os.listdir(scenario_dir)
     for file in files:
         base_name = Path(file).stem
         ret['scenarios'].append(base_name)
@@ -72,7 +76,8 @@ def start_job():
             scenario or defaults["scenario"]
             ]
     JOB_STATUS[job]['running'] = True
-    socketio.emit('service_state', {'data': {job: 'start'}})
+    s = socketio.Client()
+    s.emit('service_state', {'data': {job: 'start'}})
 
     # “I may not have gone where I intended to go, but I think I have ended up
     # where I needed to be.”
@@ -89,7 +94,8 @@ def stop_job():
     """
     job = request.args.get('job')
     job = job.replace('opbeans-', '')
-    socketio.emit('service_state', {'data': {job: 'stop'}})
+    s = socketio.Client()
+    s.emit('service_state', {'data': {job: 'stop'}})
     if job in JOB_MANAGER:
         p = JOB_MANAGER[job]
         os.killpg(os.getpgid(p.pid), signal.SIGTERM)
@@ -106,7 +112,9 @@ def fetch_configured_jobs():
     Parse the Procfile and determine which jobs are configured
     """
     ret = {}
-    with open("../Procfile", "r") as fh_:
+    cur_dir = os.path.dirname(os.path.realpath(__file__)) 
+    procfile_path = os.path.join(cur_dir, "../../../Procfile")
+    with open(procfile_path, "r") as fh_:
         p = fh_.readlines()
     for line in p:
         try:
@@ -128,5 +136,8 @@ def fetch_configured_jobs():
 # Thread-Safe-Enough (tm) for our needs because we
 # limit ourselves to a single webserver proc and this
 # is a private server
-JOB_STATUS = fetch_configured_jobs()
+try:
+    JOB_STATUS = fetch_configured_jobs()
+except FileNotFoundError:
+    JOB_STATUS = {}
 JOB_MANAGER = {}
