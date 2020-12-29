@@ -15,6 +15,16 @@ DEBUG = os.environ.get('DYNO_DEBUG')
 
 @bp.route('/list', methods=['GET'])
 def get_list():
+    """
+    Return the current status of all configured
+    jobs
+
+    Returns
+    -------
+    dict
+        The current job status dictionary.
+        HTTP clients will receive the return as JSON.
+    """
     return JOB_STATUS
 
 
@@ -22,19 +32,85 @@ def get_list():
 def get_scenarios():
     """
     Fetch a list of scenarios
+
+    Returns
+    -------
+    dict
+        A dictionary containing a list of scenarios under the `scenarios` key.
+        HTTP clients will receive the return as JSON.
     """
-    ret = {'scenarios': []}
     cur_dir = os.path.dirname(os.path.realpath(__file__)) 
     scenario_dir = os.path.join(cur_dir, "../../../scenarios")
 
     files = os.listdir(scenario_dir)
+
+    ret = {'scenarios': []}
+
     for file in files:
         base_name = Path(file).stem
         ret['scenarios'].append(base_name)
     return ret
 
 
-def _construct_toxi_env(job, port, scenario, error_weight, label_weight=None, label_name=None):
+def _construct_toxi_env(
+        job,
+        port,
+        scenario,
+        error_weight,
+        label_weight=None,
+        label_name=None
+        ):
+    """
+    Construct a dictionary representing an Opbeans environment
+    which is fronted by a Toxiproxy instance.
+
+    Note
+    ----
+    The `label_weight` and `label_name` parameters are currently used
+    only in the context of the `dyno` scenario. Otherwise, they are
+    ignored.
+
+    Parameters
+    ----------
+    job : str
+       The name of the job. Should be passed without including the `opbeans-` prefix.
+
+    port : str
+        The port for the environment. Can also be passed as a int type.
+
+    scenario : str
+        Thie scenario for use with this instance. Should be passed as simply
+        the name and NOT as a filename.
+
+    error_weight : int
+        The relative "weight" of errors. Higher number result in the load generator
+        choosing to hit pages known to produce errors a higher percentage of the time.
+        This number is entirely arbitrary and is only relative to statically configured
+        weights in the scenario file itself.
+
+    label_weight : int
+        In the case of the `dyno` scenario, a label_weight parameter can be passed which
+        increases the rate at which a given label is accessed. The label weight is controlled
+        via the `label_name` parameter. Does NOT work with scenarios other than `dyno`!
+
+    label_name : str
+        Used in conjunction with `label_weight` to specify a label which should be hit at a higher
+        or lower rate, which is controlled by the `label_weight` parameters.
+
+    
+    Returns
+    -------
+    dict
+        Dictionary containing the environment keys and values
+   
+    Examples
+    --------
+    Sample call showing just the required parameters
+
+    >>> _construct_toxi_env('python', 9999, 'my_great-scenario', 99)
+    {'OPBEANS_BASE_URL': 'http://toxi:9999', 'OPBEANS_NAME': 'opbeans-python', 'ERROR_WEIGHT': '99'}
+
+    """
     toxi_env = os.environ.copy()
     toxi_env['OPBEANS_BASE_URL'] = "http://toxi:{}".format(port)
     toxi_env['OPBEANS_NAME'] = "opbeans-" + job
@@ -84,51 +160,45 @@ def update_job():
 
     if DEBUG:
         print('Relaunching job: ', config)
-    _launch_job(
-            job,
-            config['port'],
-            config['duration'],
-            config['delay'],
-            config['workers'],
-            config['scenario'],
-            config['error_weight'],
-            config['label_weight'],
-            config['label_name'])
-
-    _update_status(job,
-            config['port'],
-            config['duration'],
-            config['delay'],
-            config['workers'],
-            config['scenario'],
-            config['error_weight'],
-            config['label_weight'],
-            config['label_name'])
+    _launch_job(job, config)
+    _update_status(job, config)
     return {}
 
 
-def _update_status(job, port, duration, delay, workers, scenario, error_weight, label_weight, label_name):
+def _update_status(job, config):
     if job not in JOB_STATUS:
         # TODO refactor to single source of truth
-        JOB_STATUS[job] = {'duration': "31536000", 'delay': "0.600", "scenario": "molotov_scenarios", "workers": "3", "error_weight": "0"}
+        JOB_STATUS[job] = {
+                'duration': "31536000",
+                'delay': "0.600",
+                "scenario": "molotov_scenarios",
+                "workers": "3",
+                "error_weight": "0"
+                }
     status = JOB_STATUS[job]
     status['running'] = True
-    status['duration'] = duration
-    status['delay'] = delay
-    status['scenario'] = scenario
-    status['workers'] = workers
-    status['error_weight'] = error_weight
-    status['port'] = port
-    status['label_weight'] = label_weight
-    status['label_name'] = label_name
+    status['duration'] = config['duration']
+    status['delay'] = config['delay']
+    status['scenario'] = config['scenario']
+    status['workers'] = config['workers']
+    status['error_weight'] = config['error_weight']
+    status['port'] = config['port']
+    status['label_weight'] = config.get('label_weight')
+    status['label_name'] = config.get('label_name')
     status['name'] = job
 
 
-def _launch_job(job, port, duration, delay, workers, scenario, error_weight, label_weight=None, label_name=None):
+def _launch_job(job, config):
     # Cut the actual number of workers to 10% of the raw value or we just crush
     # the application
     if DEBUG:
-        print('Job launch received: ', job, port, duration, delay, workers, scenario, error_weight)
+        print('Job launch received: ',
+                config['job'], config['port'],
+                config['duration'],
+                config['delay'],
+                config['workers'],
+                config['scenario'],
+                config['error_weight'])
 
     if DEBUG:
         cmd = ['sleep', '10']
@@ -138,30 +208,25 @@ def _launch_job(job, port, duration, delay, workers, scenario, error_weight, lab
             "/app/venv/bin/molotov",
             "-v",
             "--duration",
-            str(duration),
+            str(config['duration']),
             "--delay",
-            str(delay),
+            str(config['delay']),
             "--uvloop",
             "--workers",
-            str(int(workers)),
+            str(int(config['workers'])),
             "--statsd",
             "--statsd-address",
             "udp://stats-d:8125",
-            scenario
+            config['scenario']
             ]
-#<<<<<<< HEAD
-#    JOB_STATUS[job]['running'] = True
     s = socketio.Client()
     s.emit('service_state', {'data': {job: 'start'}})
-#=======
     if DEBUG:
         print('Launching with: ', cmd)
-#    socketio.emit('service_state', {'data': {job: 'start'}})
-#>>>>>>> 4e765c5b9ef2ec57b6dc9fe5678d655c9ac9662d
 
-    toxi_env = _construct_toxi_env(job, port, scenario, error_weight)
+    toxi_env = _construct_toxi_env(job, config['port'], config['scenario'], config['error_weight'])
 
-    _update_status(job, port, duration, delay, workers, scenario, error_weight, label_weight, label_name)
+    _update_status(job, config) 
 
     # “I may not have gone where I intended to go, but I think I have ended up
     # where I needed to be.”
@@ -174,32 +239,28 @@ def _launch_job(job, port, duration, delay, workers, scenario, error_weight, lab
 def start_job():
     r = request.get_json() or {}
     job = r.get('job')
-    port = r.get('port')
-    scenario = r.get('scenario', "molotov_scenarios")
-    duration = r.get('duration', "31536000")
-    delay = r.get('delay', "0.600")
-    workers = r.get('workers', "3")
-    error_weight = r.get('error_weight', "0")
-
-    label_weight = r.get('label_weight', "2")
-    label_name = r.get('label_name', 'foo_label')
+    config = {
+            'port': r.get('port'),
+            'scenario': r.get('scenario', "molotov_scenarios"),
+            'duration': r.get('duration', "31536000"),
+            'delay': r.get('delay', "0.600"),
+            'workers': r.get('workers', "3"),
+            'error_weight': r.get('error_weight', "0"),
+            'label_weight': r.get('label_weight', "2"),
+            'label_name': r.get('label_name', 'foo_label')
+            }
 
     job = job.replace('opbeans-', '')
-#<<<<<<< HEAD
-#    s = socketio.Client()
-#    s.emit('service_state', {'data': {job: 'stop'}})
-#=======
 
-    if scenario:
-        scenario = "scenarios/" + scenario + ".py"
+    if config['scenario']:
+        config['scenario'] = "scenarios/" + config['scenario'] + ".py"
 
-    _launch_job(job, port, duration, delay, workers, scenario, error_weight, label_weight, label_name)
+    _launch_job(job, config)
 
     return {}
 
 
 def _stop_job(job):
-#    socketio.emit('service_state', {'data': {job: 'stop'}})
     s = socketio.Client()
     s.emit('service_state', {'data': {job: 'stop'}})
     if job in JOB_MANAGER:

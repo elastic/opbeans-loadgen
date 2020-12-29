@@ -37,7 +37,10 @@ def default_environment(monkeypatch):
 def app():
     """
     This overrides the app() function to initialize the pytest-flask
-    plugin
+    plugin. For more information, please see the pytest-flask
+    documentation:
+
+    https://pytest-flask.readthedocs.io
     """
     dyno_app = dyno.app.create_app()
     return dyno_app
@@ -46,6 +49,7 @@ def app():
 def scenarios():
     """
     This fixture calculates the scenarios present in the application
+    by evaluating what is currently present on disk
     """
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     fixture_path = os.path.join(cur_dir, "../scenarios")
@@ -56,7 +60,8 @@ def scenarios():
 @pytest.fixture
 def procfile():
     """
-    Provide a procfile stub for use in tests
+    This string can serve as a representation for
+    what is typically found in a generated Procfile
     """
     return "python: "
     "OPBEANS_BASE_URL=http://opbeans-python:3000 "
@@ -67,6 +72,10 @@ def procfile():
 
 @pytest.fixture
 def job_status():
+    """
+    This fixture represents a job status dictionary
+    which is represented internally as JOB_STATUS
+    """
     return {
             'python': {
                 'url': 'http://opbeans-python:3000',

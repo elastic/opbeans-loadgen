@@ -48,7 +48,18 @@ def test_start(client):
             }
     with mock.patch('dyno.app.api.control._launch_job') as job_launcher_mock:
         res = client.post(url_for('api.start_job'), json=query)
-    job_launcher_mock.assert_called_with('test-job', '999', '1234', '4321', '3', 'scenarios/test_scenario.py', '0', '2', 'foo_label')
+    job_launcher_mock.assert_called_with(
+            'test-job',
+            {
+                'port': '999',
+                'duration': '1234',
+                'delay': '4321',
+                'workers': '3',
+                'scenario': 'scenarios/test_scenario.py',
+                'error_weight': '0',
+                'label_weight': '2',
+                'label_name': 'foo_label'
+                })
     assert res.json == {}
 
 def test_update_no_job(client):
@@ -80,9 +91,22 @@ def test_update(client, job_status):
                     client.post(url_for('api.update_job'), json=post_data)
 
     stop_job_mock.assert_called_with('python')
-    job_caller_stub = mock.call('python', '990', '991', '992', 990, 'fake_scenario', 991, 992, 'fake_label_name')
-    launch_job_mock.assert_has_calls( [job_caller_stub] )
-    update_status_mock.assert_has_calls( [job_caller_stub] )
+    caller_stub = mock.call(
+            'python',
+            {
+                'url': 'http://opbeans-python:3000',
+                'name': 'opbeans-python',
+                'running': False, 'port': '990',
+                'duration': '991', 'delay': '992',
+                'workers': 990, 'scenario': 'fake_scenario',
+                'error_weight': 991, 'label_weight': 992,
+                'label_name': 'fake_label_name',
+                'p': None
+                }
+            )
+
+    launch_job_mock.assert_has_calls( [caller_stub] )
+    update_status_mock.assert_has_calls( [caller_stub] )
 
 def test_stop(client):
     """
@@ -125,12 +149,14 @@ def test_launch_job(proc_mock, update_status_mock, toxi_env_mock, socketio_mock)
     """
     dyno.app.api.control._launch_job(
         'python',
-        '990',
-        '991',
-        '992',
-        '993',
-        'fake_scenario',
-        '994'
+        {
+            'port': '990',
+            'duration': '991',
+            'delay': '992',
+            'workers': '993',
+            'scenario': 'fake_scenario',
+            'error_weight':' 994'
+            }
         )
     assert socketio_mock.caled_with('service_state', {'data': {'python': 'start'}})
     assert toxi_env_mock.called_with('python', '990', 'fake_scenario', '994')
