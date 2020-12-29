@@ -15,7 +15,7 @@ def create_app(config_class=Cfg):
 
 
 app = create_app()
-socketio = SocketIO(app, cors_allowed_origins='http://localhost:9000')
+socketio = SocketIO(app, cors_allowed_origins=['http://localhost:9000', 'http://localhost:5000'])
 
 
 
