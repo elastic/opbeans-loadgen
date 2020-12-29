@@ -13,12 +13,8 @@ def create_app(config_class=Cfg):
     app.register_blueprint(api_bp, url_prefix='/api')
     return app
 
-
 app = create_app()
 socketio = SocketIO(app, cors_allowed_origins=['http://localhost:9000', 'http://localhost:5000'])
-
-
-
 
 @app.route('/log')
 def index():
