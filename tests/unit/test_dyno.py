@@ -116,24 +116,52 @@ def test_list(client, job_status):
 @mock.patch('socketio.client.Client.emit')
 @mock.patch('dyno.app.api.control._construct_toxi_env')
 @mock.patch('dyno.app.api.control._update_status')
-@mock.create_autospec('subprocess.Popen')
-def test_launch_job(popen_mock, update_status_mock, toxi_env_mock, socketio_mock):
+@mock.patch('subprocess.Popen')
+def test_launch_job(proc_mock, update_status_mock, toxi_env_mock, socketio_mock):
     """
     GIVEN a sane set of arguments
     WHEN the _launc_job() function is called
     THEN a job is launched
     """
-    dyno.app.control._launch_job(
-           'python',
-           '990',
-           '991',
-           '992',
-           '993',
-           'fake_scenario',
-           '994'
-           )
-
-
+    dyno.app.api.control._launch_job(
+        'python',
+        '990',
+        '991',
+        '992',
+        '993',
+        'fake_scenario',
+        '994'
+        )
+    assert socketio_mock.caled_with('service_state', {'data': {'python': 'start'}})
+    assert toxi_env_mock.called_with('python', '990', 'fake_scenario', '994')
+    assert update_status_mock.called_with(
+            'python',
+            '990',
+            '991',
+            '992',
+            '993',
+            'fake_scenario',
+            '994',
+            None,
+            None
+            )
+    assert proc_mock.call_args[0][0] == [
+            '/app/venv/bin/python',
+            '/app/venv/bin/molotov',
+            '-v',
+            '--duration',
+            '991',
+            '--delay',
+            '992',
+            '--uvloop',
+            '--workers',
+            '993',
+            '--statsd',
+            '--statsd-address',
+            'udp://stats-d:8125',
+            'fake_scenario'
+            ]
+    [0]
 
 
 
