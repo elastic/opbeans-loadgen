@@ -8,7 +8,7 @@ from pathlib import Path
 
 from . import bp
 import socketio
-from flask import request
+from flask import request, abort
 
 DEBUG = os.environ.get('DYNO_DEBUG')
 
@@ -58,10 +58,7 @@ def update_job():
     job = r.get('job')
 
     if job is None:
-        print('No job to update')
-        # TODO better error return
-        return {}
-
+        return "Must supply job", 400
     if job not in JOB_STATUS:
         # TODO refactor to single source of truth
         JOB_STATUS[job] = {
@@ -83,11 +80,10 @@ def update_job():
         config['label_weight'] = r['label_weight']
     if 'label_name' in r:
         config['label_name'] = r['label_name']
-
     _stop_job(job)
 
-    print('Relaunching job: ', config)
-
+    if DEBUG:
+        print('Relaunching job: ', config)
     _launch_job(
             job,
             config['port'],
@@ -131,7 +127,8 @@ def _update_status(job, port, duration, delay, workers, scenario, error_weight, 
 def _launch_job(job, port, duration, delay, workers, scenario, error_weight, label_weight=None, label_name=None):
     # Cut the actual number of workers to 10% of the raw value or we just crush
     # the application
-    print('Job launch received: ', job, port, duration, delay, workers, scenario, error_weight)
+    if DEBUG:
+        print('Job launch received: ', job, port, duration, delay, workers, scenario, error_weight)
 
     if DEBUG:
         cmd = ['sleep', '10']
@@ -157,7 +154,8 @@ def _launch_job(job, port, duration, delay, workers, scenario, error_weight, lab
     s = socketio.Client()
     s.emit('service_state', {'data': {job: 'start'}})
 #=======
-    print('Launching with: ', cmd)
+    if DEBUG:
+        print('Launching with: ', cmd)
 #    socketio.emit('service_state', {'data': {job: 'start'}})
 #>>>>>>> 4e765c5b9ef2ec57b6dc9fe5678d655c9ac9662d
 

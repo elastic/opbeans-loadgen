@@ -57,16 +57,33 @@ def test_update_no_job(client):
     WHEN the request is sent to the /update endpoint
     THEN the endpoint bails out and returns an empty response
     """
+    res = client.post(url_for('api.update_job'))
+    assert res.status_code == 400
 
-def test_update(client):
+def test_update(client, job_status):
     """
     GIVEN an HTTP client
     WHEN the client requests /api/update to update a job
     THEN the job is updated
     """
-    raise Exception("unimplemented")
+    post_data = {
+            'job': 'python',
+            'workers': 990,
+            'error_weight': 991,
+            'label_weight': 992,
+            'label_name': 'fake_label_name'
+            }
+    with mock.patch.dict('dyno.app.api.control.JOB_STATUS', job_status):
+        with mock.patch('dyno.app.api.control._stop_job') as stop_job_mock:
+            with mock.patch('dyno.app.api.control._launch_job') as launch_job_mock:
+                with mock.patch('dyno.app.api.control._update_status') as update_status_mock:
+                    client.post(url_for('api.update_job'), json=post_data)
 
- 
+    stop_job_mock.assert_called_with('python')
+    job_caller_stub = mock.call('python', '990', '991', '992', 990, 'fake_scenario', 991, 992, 'fake_label_name')
+    launch_job_mock.assert_has_calls( [job_caller_stub] )
+    update_status_mock.assert_has_calls( [job_caller_stub] )
+
 def test_stop(client):
     """
     GIVEN an HTTP client

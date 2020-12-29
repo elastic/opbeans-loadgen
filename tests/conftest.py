@@ -72,6 +72,14 @@ def job_status():
                 'url': 'http://opbeans-python:3000',
                 'name': 'opbeans-python',
                 'running': False,
+                'port': '990',
+                'duration': '991',
+                'delay': '992',
+                'workers': '993',
+                'scenario': 'fake_scenario',
+                'error_weight': '994',
+                'label_weight': '995',
+                'label_name': 'fake_label_name',
                 'p': None}
             }
 
