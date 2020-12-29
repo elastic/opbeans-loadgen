@@ -113,6 +113,30 @@ def test_list(client, job_status):
     ret = client.get(url_for('api.get_list'))
     assert ret.json == {}
 
+@mock.patch('socketio.client.Client.emit')
+@mock.patch('dyno.app.api.control._construct_toxi_env')
+@mock.patch('dyno.app.api.control._update_status')
+@mock.create_autospec('subprocess.Popen')
+def test_launch_job(popen_mock, update_status_mock, toxi_env_mock, socketio_mock):
+    """
+    GIVEN a sane set of arguments
+    WHEN the _launc_job() function is called
+    THEN a job is launched
+    """
+    dyno.app.control._launch_job(
+           'python',
+           '990',
+           '991',
+           '992',
+           '993',
+           'fake_scenario',
+           '994'
+           )
+
+
+
+
+
 @mock.patch.dict('os.environ', {}, clear=True)  # Assure a clean env
 def test_construct_toxi_env():
     """
