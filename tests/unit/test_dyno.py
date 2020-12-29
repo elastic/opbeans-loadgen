@@ -46,29 +46,25 @@ def test_start(client):
             'duration': '1234',
             'delay': '4321'
             }
-    with mock.patch('subprocess.Popen') as fake_popen:
-        with mock.patch('socketio.client.Client.emit') as fake_socketio:
-            with mock.patch.dict('dyno.app.api.control.JOB_STATUS', {'test-job': {'running': False}}):
-                res = client.get(url_for('api.start_job'), query_string=query)
-
-    # Here we assert against the call args because we don't care about tall the other stuff
-    # that comes along for the ride with Popen, such as the environment
-    assert fake_popen.call_args[0][0] == [
-            '/app/venv/bin/python',
-            '/app/venv/bin/molotov',
-            '-v',
-            '--duration',
-            '1234',
-            '--delay',
-            '4321',
-            '--uvloop',
-            '--statsd',
-            '--statsd-address',
-            'udp://stats-d:8125',
-            'test_scenario'
-            ]
-    fake_socketio.assert_called_with('service_state', {'data': {'test-job': 'start'}})
+    with mock.patch('dyno.app.api.control._launch_job') as job_launcher_mock:
+        res = client.post(url_for('api.start_job'), json=query)
+    job_launcher_mock.assert_called_with('test-job', '999', '1234', '4321', '3', 'scenarios/test_scenario.py', '0', '2', 'foo_label')
     assert res.json == {}
+
+def test_update_no_job(client):
+    """
+    GIVEN a request that does not specify a job
+    WHEN the request is sent to the /update endpoint
+    THEN the endpoint bails out and returns an empty response
+    """
+
+def test_update(client):
+    """
+    GIVEN an HTTP client
+    WHEN the client requests /api/update to update a job
+    THEN the job is updated
+    """
+    raise Exception("unimplemented")
 
  
 def test_stop(client):
@@ -98,17 +94,7 @@ def test_list(client, job_status):
     THEN the client receives the list of jobs
     """
     ret = client.get(url_for('api.get_list'))
-    assert ret.json == job_status
-
-def test_configured_jobs(procfile, job_status):
-    """
-    GIVEN a Procfile
-    WHEN fetch_configured_jobs is called
-    THEN it returns a dictionary containing configured jobs
-    """
-    with mock.patch('dyno.app.api.open', mock.mock_open(read_data=procfile)):
-        ret = dyno.app.api.control.fetch_configured_jobs()
-    assert ret == job_status
+    assert ret.json == {}
 
 @mock.patch.dict('os.environ', {}, clear=True)  # Assure a clean env
 def test_construct_toxi_env():
@@ -117,10 +103,10 @@ def test_construct_toxi_env():
     WHEN we ask for a dictionary describing the environment
     THEN the returned dictionary reflects the configured environment
     """
-    ret = dyno.app.api.control._construct_toxi_env('fake_job', 9999)
+    ret = dyno.app.api.control._construct_toxi_env('fake-job', 9999, 'fake_scenario', 99)
     assert ret == {
             'OPBEANS_BASE_URL': "http://toxi:9999",
-            'OPBEANS_NAME': 'fake_job'
+            'OPBEANS_NAME': 'opbeans-fake-job',
+            'ERROR_WEIGHT': '99'
             }
-
 

@@ -56,8 +56,6 @@ def update_job():
     """
     r = request.get_json() or {}
     job = r.get('job')
-    # workers = r.get('workers', "50")
-    # error_weight = r.get('error_weight', "0")
 
     if job is None:
         print('No job to update')
@@ -66,9 +64,17 @@ def update_job():
 
     if job not in JOB_STATUS:
         # TODO refactor to single source of truth
-        JOB_STATUS[job] = {'duration': "31536000", 'delay': "0.600", "scenario": "molotov_scenarios", "workers": r.get('workers', "3"), "error_weight": r.get('error_weight', "0")}
+        JOB_STATUS[job] = {
+                'duration': "31536000",
+                'delay': "0.600",
+                "scenario": "molotov_scenarios",
+                "workers": r.get('workers', "3"),
+                "error_weight": r.get('error_weight', "0")
+                }
         return {}
+
     config = JOB_STATUS[job]
+
     if 'workers' in r:
         config['workers'] = r['workers']
     if 'error_weight' in r:
@@ -79,9 +85,29 @@ def update_job():
         config['label_name'] = r['label_name']
 
     _stop_job(job)
+
     print('Relaunching job: ', config)
-    _launch_job(job, config['port'], config['duration'], config['delay'], config['workers'], config['scenario'], config['error_weight'], config['label_weight'], config['label_name'])
-    _update_status(job, config['port'], config['duration'], config['delay'], config['workers'], config['scenario'], config['error_weight'], config['label_weight'], config['label_name'])
+
+    _launch_job(
+            job,
+            config['port'],
+            config['duration'],
+            config['delay'],
+            config['workers'],
+            config['scenario'],
+            config['error_weight'],
+            config['label_weight'],
+            config['label_name'])
+
+    _update_status(job,
+            config['port'],
+            config['duration'],
+            config['delay'],
+            config['workers'],
+            config['scenario'],
+            config['error_weight'],
+            config['label_weight'],
+            config['label_name'])
     return {}
 
 
@@ -202,8 +228,5 @@ def stop_job():
 # Thread-Safe-Enough (tm) for our needs because we
 # limit ourselves to a single webserver proc and this
 # is a private server
-try:
-    JOB_STATUS = fetch_configured_jobs()
-except FileNotFoundError:
-    JOB_STATUS = {}
+JOB_STATUS = {}
 JOB_MANAGER = {}
