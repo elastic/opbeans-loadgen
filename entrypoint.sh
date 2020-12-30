@@ -7,6 +7,9 @@ if [ $WS ];
 then
     echo "Starting webserver..."
     cd dyno
+    # TODO This should eventually be replaced with a proper application packaging strategy
+    # but it works for the time being.
+    export PYTHONPATH=$PYTHONPATH:/app
     gunicorn -b 0.0.0.0 --worker-class eventlet -w 1 app:app
 else
     echo "Starting load tests..."

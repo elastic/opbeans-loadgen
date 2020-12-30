@@ -42,7 +42,7 @@ def app():
 
     https://pytest-flask.readthedocs.io
     """
-    dyno_app = dyno.app.create_app()
+    dyno_app = dyno.app.create_app(app_env='test')
     return dyno_app
 
 @pytest.fixture
