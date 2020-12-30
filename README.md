@@ -8,6 +8,8 @@ This is a load generator for [Opbeans](https://github.com/elastic?utf8=%E2%9C%93
 
 It has two primary modes of operation -- either as a stand-alone container which can generate load based on environment variables present at runtime or as a long-running web service which can receive commands to control load-generation over a HTTP REST interface.
 
+Load is generated through invocation of `molotov` which is a load-generation tool provided by [the Molotov project](https://molotov.readthedocs.io).
+
 ## Standalone mode
 ### Running
 
