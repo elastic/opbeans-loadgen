@@ -22,6 +22,8 @@ def start_job():
 
     Exposed via HTTP at /api/start
 
+    Supported HTTP methods: GET
+
     Note
     ----
     Paramaters are received via JSON in a Flask request object. They
@@ -101,6 +103,7 @@ def get_list():
     jobs
 
     Exposed via HTTP at /api/list
+
     Supported HTTP methods: GET
 
     Returns
@@ -140,6 +143,7 @@ def update_job():
     values.
 
     Exposed via HTTP at /api/update
+
     Supported HTTP methods: POST
 
     Parameters
@@ -220,6 +224,7 @@ def stop_job():
     Stop a load-generation job
 
     Exposed via HTTP at /api/stop
+
     Supported HTTP methods: POST
 
     Note
