@@ -15,7 +15,7 @@ Load is generated through invocation of `molotov` which is a load-generation too
 
 Start the docker container with a list of base URLs to generate load on
 
-    docker run --rm -e OPBEANS_URLS=opbeans-node:http://opbeans-node:3000,opbeans-python:http://opbeans-python:3000 opbeans/opbeans-loadgen
+    > docker run --rm -e OPBEANS_URLS=opbeans-node:http://opbeans-node:3000,opbeans-python:http://opbeans-python:3000 opbeans/opbeans-loadgen
 
 ## HTTP mode
 The use of HTTP mode was developed specifically as a load-generation component for use in the [APM Integration Test](https://github.com/elastic/apm-integration-testing) suite. 
@@ -50,7 +50,7 @@ For further discussion, please see the detailed documentation in the `README` th
 The simplest way to run all tests for this project is by running:
 
 ```bash
-make test
+> make test
 ```
 
 ## Types of tests
@@ -58,16 +58,22 @@ make test
 
 Tests are written using [BATS](https://github.com/sstephenson/bats) under the `/tests` dir.
 ### Pytest
+To run the Python tests, one must first install the test requirements:
+```bash
+> pip install requirements-dev.txt
+```
+
 This project includes a [pytest](http://docs.pytest.org/en/latest/) test suite which provides a set of unit and functional tests.
 
 To run these tests, both `pytest` and the `pytest-flask` modules must be installed and available to Python.
+
 
 ## Publishing to Docker Hub locally
 
 Publish the docker image with
 
 ```bash
-VERSION=1.2.3 make publish
+> VERSION=1.2.3 make publish
 ```
 
 NOTE: VERSION refers to the tag for the docker image which will be published in the registry
