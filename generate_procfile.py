@@ -24,11 +24,11 @@ def create_procfile(service_env_string, rpm_env_string='',rls_env_string='', *ar
 
     for service in services:
         try:
-            service_name, service_url = service.split(':', maxsplit=1)
+            service_name, service_url = service.split(':', 1)
         except ValueError:
             print('ERROR: Must supply service(s) in the form service_name:service_url')
             sys.exit(1)
-        process_name = service_name.split('-', maxsplit=1)[1].replace(
+        process_name = service_name.split('-', 1)[1].replace(
             '-', ''
         )  # we use second part of name and strip all remaining dashes
         delay = 60.0 / rpms.get(service_name, 100)
