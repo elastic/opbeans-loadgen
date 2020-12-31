@@ -1,5 +1,7 @@
 VERSION ?= latest
 LTS_ALPINE ?= 12-alpine
+VENV ?= ./venv
+PYTHON ?= python3
 
 .PHONY: help
 .DEFAULT_GOAL := help
@@ -15,7 +17,13 @@ build: ## Build docker image
 bats: ## Install bats in the project itself
 	@git clone https://github.com/sstephenson/bats.git
 
-prepare-test: bats ## Prepare the bats dependencies
+venv: requirements-dev.txt
+	test -d $(VENV) || virtualenv -q --python=$(PYTHON) $(VENV);\
+	source $(VENV)/bin/activate || exit 1;\
+	pip install -r requirements-dev.txt;\
+	touch $(VENV);\
+
+prepare-test: bats venv ## Prepare the dependencies
 	@docker pull node:${LTS_ALPINE}
 	@mkdir -p target
 	@git submodule sync
