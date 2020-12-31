@@ -3,7 +3,7 @@
 rm -rf Procfile
 python3 generate_procfile.py "$OPBEANS_URLS" "$OPBEANS_RPMS" "$OPBEANS_RLS" > Procfile
 
-if [ $WS ];
+if [ -z $WS ];
 then
     echo "Starting webserver..."
     cd dyno
