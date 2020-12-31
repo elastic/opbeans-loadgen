@@ -4,7 +4,7 @@ uvloop==0.11.0
 aiohttp==3.3.2
 aiomeasures==0.5.14
 async-timeout==3.0.0
-attrs==18.1.0
+attrs
 chardet==3.0.4
 idna==2.7
 multidict==4.3.1
