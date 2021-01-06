@@ -30,7 +30,7 @@ When running the Opbeans Load Generator in the APM Integration Test suite with t
 
 ### HTTP method overview
 
-The following is a list of HTTP methods and their purpose. For specifics including possible
+The list of HTTP methods and their purpose can be found in the [http method overview section](dyno/README.md#http-method-overview).
 arguments and expected returns, please see the in-line documentation:
 
 Endpoint|HTTP Verb|Description
