@@ -31,15 +31,6 @@ When running the Opbeans Load Generator in the APM Integration Test suite with t
 ### HTTP method overview
 
 The list of HTTP methods and their purpose can be found in the [http method overview section](dyno/README.md#http-method-overview).
-arguments and expected returns, please see the in-line documentation:
-
-Endpoint|HTTP Verb|Description
---------|---------|-----------
-/api/start|POST|Start a load-generation job
-/api/list|GET|List all configured jobs
-/api/update|POST|Updates a running job with a new configuration
-/api/stop|GET|Stops a currently-running load-generation job
-/api/scenarios|GET|Retreive a list of scenarios
 
 ### Further discussion
 
