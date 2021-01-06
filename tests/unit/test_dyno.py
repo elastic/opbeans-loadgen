@@ -158,7 +158,7 @@ def test_launch_job(proc_mock, update_status_mock, toxi_env_mock, socketio_mock)
             'error_weight':' 994'
             }
         )
-    assert socketio_mock.caled_with('service_state', {'data': {'python': 'start'}})
+    assert socketio_mock.called_with('service_state', {'data': {'python': 'start'}})
     assert toxi_env_mock.called_with('python', '990', 'fake_scenario', '994')
     assert update_status_mock.called_with(
             'python',
@@ -204,4 +204,3 @@ def test_construct_toxi_env():
             'OPBEANS_NAME': 'opbeans-fake-job',
             'ERROR_WEIGHT': '99'
             }
-
