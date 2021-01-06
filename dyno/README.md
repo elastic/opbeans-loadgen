@@ -16,7 +16,7 @@ Endpoint|HTTP Verb|Description
 `/api/list`|`GET`|List all configured jobs
 `/api/update`|`POST`|Updates a running job with a new configuration
 `/api/stop`|`GET`|Stops a currently-running load-generation job
-`/api/scenarios`|`GET`|Retreive a list of scenarios
+`/api/scenarios`|`GET`|Retrieve a list of scenarios
 
 For specifics on arguments to the various endpoints, please see the in-line documentation.
 
