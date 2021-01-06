@@ -43,7 +43,7 @@ The following environment variables are supported inside scenarios:
 Environment Variable|Description
 --------------------|-----------
 `SERVER_URL`|The target for load traffic
-`SERVICE_NAME`|The type of service. Used to differenate between the specific endpoints available in different opebeans. Ex: `opbeans-python`|`default`
+`SERVICE_NAME`|The type of service. Used to differentiate between the specific endpoints available in different opbeans. Ex: `opbeans-python`|`default`
 `ERROR_WEIGHT`|Controls the frequency at which error pages are called
 `LABEL_WEIGHT`|Controls the frequency at which specific labels are called. See `Labels` for more information.
 
