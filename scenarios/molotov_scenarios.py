@@ -112,7 +112,7 @@ async def scenario_orders_post(session):
         assert resp.status == 200, resp.status
 
 
-if SERVICE_NAME in ('opbeans-python', 'opbeans-go'):
+if SERVICE_NAME.startswith(tuple(['opbeans-python', 'opbeans-go'])):
     @scenario(weight=ERROR_WEIGHT)
     async def scenario_oopsie(session):
         print('EXECUTING OOPS', ERROR_WEIGHT)
@@ -139,7 +139,7 @@ if SERVICE_NAME in ('opbeans-python', 'opbeans-go'):
             assert resp.status == 200, resp.status
 
 
-if SERVICE_NAME == 'opbeans-node':
+if SERVICE_NAME.startswith('opbeans-node'):
     @scenario(weight=ERROR_WEIGHT)
     async def scenario_log_error(session):
         async with session.get(join(SERVER_URL, 'log-error')) as resp:
@@ -170,7 +170,7 @@ if SERVICE_NAME == 'opbeans-node':
             assert resp.status == 200
 
 
-if SERVICE_NAME == 'opbeans-ruby':
+if SERVICE_NAME.startswith('opbeans-ruby'):
     @scenario(weight=ERROR_WEIGHT)
     async def scenario_log_error(session):
         async with session.get(join(SERVER_URL, 'log-error')) as resp:
