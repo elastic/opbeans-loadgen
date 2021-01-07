@@ -50,7 +50,7 @@ def test_command_execution():
 def test_entrypoint_execution(default_environment):
     """
     GIVEN a call to the entrypoint script
-    WHEN the enviornment variables are set for URLS, RPMS, and RLS
+    WHEN the environment variables are set for URLS, RPMS, and RLS
     THEN the command will produce output with the corresponding values set
     """
     entrypoint_script = os.path.join(_root_dir(), 'entrypoint.sh')
