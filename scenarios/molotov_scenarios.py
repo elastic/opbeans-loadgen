@@ -9,8 +9,10 @@ from molotov import scenario
 
 SERVER_URL = os.environ.get('OPBEANS_BASE_URL', 'http://localhost:8000')
 SERVICE_NAME = os.environ.get('OPBEANS_NAME', 'default')
+ERROR_WEIGHT = int(os.environ.get('ERROR_WEIGHT', 2))
 
-
+print("SERVICE NAME", SERVICE_NAME)
+print("ERROR WEIGHT", ERROR_WEIGHT)
 @scenario(weight=2)
 async def scenario_root(session):
     async with session.get(SERVER_URL) as resp:
@@ -111,8 +113,9 @@ async def scenario_orders_post(session):
 
 
 if SERVICE_NAME.startswith(tuple(['opbeans-python', 'opbeans-go'])):
-    @scenario(weight=1)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_oopsie(session):
+        print('EXECUTING OOPS', ERROR_WEIGHT)
         async with session.get(join(SERVER_URL, 'oopsie')) as resp:
             assert resp.status == 500
 
@@ -137,25 +140,25 @@ if SERVICE_NAME.startswith(tuple(['opbeans-python', 'opbeans-go'])):
 
 
 if SERVICE_NAME.startswith('opbeans-node'):
-    @scenario(weight=2)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_log_error(session):
         async with session.get(join(SERVER_URL, 'log-error')) as resp:
             assert resp.status == 500
 
 
-    @scenario(weight=2)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_log_message(session):
         async with session.get(join(SERVER_URL, 'log-message')) as resp:
             assert resp.status == 500
 
 
-    @scenario(weight=1)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_is_it_coffee_time_typo(session):
         async with session.get(join(SERVER_URL, 'is-it-coffee-time')) as resp:
             assert resp.status == 500
 
 
-    @scenario(weight=1)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_throw_error(session):
         async with session.get(join(SERVER_URL, 'throw-error')) as resp:
             assert resp.status == 500
@@ -168,25 +171,25 @@ if SERVICE_NAME.startswith('opbeans-node'):
 
 
 if SERVICE_NAME.startswith('opbeans-ruby'):
-    @scenario(weight=2)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_log_error(session):
         async with session.get(join(SERVER_URL, 'log-error')) as resp:
             assert resp.status == 500
 
 
-    @scenario(weight=2)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_log_message(session):
         async with session.get(join(SERVER_URL, 'log-message')) as resp:
             assert resp.status == 500
 
 
-    @scenario(weight=1)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_is_it_coffee_time_typo(session):
         async with session.get(join(SERVER_URL, 'is-it-coffee-time')) as resp:
             assert resp.status == 500
 
 
-    @scenario(weight=1)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_throw_error(session):
         async with session.get(join(SERVER_URL, 'throw-error')) as resp:
             assert resp.status == 500

@@ -9,33 +9,34 @@ from molotov import scenario
 
 SERVER_URL = os.environ.get('OPBEANS_BASE_URL', 'http://localhost:8000')
 SERVICE_NAME = os.environ.get('OPBEANS_NAME', 'default')
+ERROR_WEIGHT = int(os.environ.get('ERROR_WEIGHT', 2))
+LABEL_WEIGHT = int(os.environ.get('LABEL_WEIGHT', 2))
 
-
-@scenario(weight=2)
+@scenario(weight=1)
 async def scenario_root(session):
     async with session.get(SERVER_URL) as resp:
         assert resp.status == 200, resp.status
 
 
-@scenario(weight=8)
+@scenario(weight=1)
 async def scenario_stats(session):
     async with session.get(join(SERVER_URL, 'api', 'stats')) as resp:
         assert resp.status == 200, resp.status
 
 
-@scenario(weight=7)
+@scenario(weight=1)
 async def scenario_products(session):
     async with session.get(join(SERVER_URL, 'api', 'products')) as resp:
         assert resp.status == 200, resp.status
 
 
-@scenario(weight=8)
+@scenario(weight=1)
 async def scenario_products_top(session):
     async with session.get(join(SERVER_URL, 'api', 'products', 'top')) as resp:
         assert resp.status == 200, resp.status
 
 
-@scenario(weight=6)
+@scenario(weight=1)
 async def scenario_products_id(session):
     async with session.get(join(SERVER_URL, 'api', 'products', str(random.randint(1, 6)))) as resp:
         assert resp.status == 200, resp.status
@@ -47,13 +48,13 @@ async def scenario_products_id_customers(session):
         assert resp.status == 200, resp.status
 
 
-@scenario(weight=6)
+@scenario(weight=1)
 async def scenario_products_id_customers_limit(session):
     async with session.get(join(SERVER_URL, 'api', 'products', str(random.randint(1, 6)), 'customers?limit=%d' % (random.randint(5, 11) * 10))) as resp:
         assert resp.status == 200, resp.status
 
 
-@scenario(weight=8)
+@scenario(weight=1)
 async def scenario_types(session):
     async with session.get(join(SERVER_URL, 'api', 'types')) as resp:
         assert resp.status == 200, resp.status
@@ -65,31 +66,31 @@ async def scenario_types_id(session):
         assert resp.status == 200, resp.status
 
 
-@scenario(weight=8)
+@scenario(weight=1)
 async def scenario_customers(session):
     async with session.get(join(SERVER_URL, 'api', 'customers')) as resp:
         assert resp.status == 200, resp.status
 
 
-@scenario(weight=8)
+@scenario(weight=1)
 async def scenario_customers_id(session):
     async with session.get(join(SERVER_URL, 'api', 'customers', str(random.randint(1, 1000)))) as resp:
         assert resp.status == 200, resp.status
 
 
-@scenario(weight=2)
+@scenario(weight=8)
 async def scenario_wrong_customers_id(session):
     async with session.get(join(SERVER_URL, 'api', 'customers', str(random.randint(5000, 10000)))) as resp:
         assert resp.status == 404, resp.status
 
 
-@scenario(weight=8)
+@scenario(weight=1)
 async def scenario_orders(session):
     async with session.get(join(SERVER_URL, 'api', 'orders')) as resp:
         assert resp.status == 200, resp.status
 
 
-@scenario(weight=8)
+@scenario(weight=1)
 async def scenario_orders_id(session):
     async with session.get(join(SERVER_URL, 'api', 'orders', str(random.randint(1, 1000)))) as resp:
         assert resp.status == 200, resp.status
@@ -111,7 +112,15 @@ async def scenario_orders_post(session):
 
 
 if SERVICE_NAME.startswith(tuple(['opbeans-python', 'opbeans-go'])):
-    @scenario(weight=1)
+
+    # Special scenario to manipulate the /labeldelay endpoint
+    @scenario(weight=LABEL_WEIGHT)
+    async def scenario_label_endpoint(session):
+        async with session.get(join(SERVER_URL, 'labeldely', '?delay=',  random.randint(1, 1000), '&label=', os.environ.get('LABEL_NAME', 'my_label'))) as resp:
+            assert resp.status == 200, resp.status
+
+
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_oopsie(session):
         async with session.get(join(SERVER_URL, 'oopsie')) as resp:
             assert resp.status == 500
@@ -137,56 +146,56 @@ if SERVICE_NAME.startswith(tuple(['opbeans-python', 'opbeans-go'])):
 
 
 if SERVICE_NAME.startswith('opbeans-node'):
-    @scenario(weight=2)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_log_error(session):
         async with session.get(join(SERVER_URL, 'log-error')) as resp:
             assert resp.status == 500
 
 
-    @scenario(weight=2)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_log_message(session):
         async with session.get(join(SERVER_URL, 'log-message')) as resp:
             assert resp.status == 500
 
 
-    @scenario(weight=1)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_is_it_coffee_time_typo(session):
         async with session.get(join(SERVER_URL, 'is-it-coffee-time')) as resp:
             assert resp.status == 500
 
 
-    @scenario(weight=1)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_throw_error(session):
         async with session.get(join(SERVER_URL, 'throw-error')) as resp:
             assert resp.status == 500
 
 
-    @scenario(weight=1)
+    @scenario(weight=os.environ['ERROR_WEIGHT'])
     async def scenario_throw_error_async(session):
         async with session.get(join(SERVER_URL, 'throw-async-error')) as resp:
             assert resp.status == 200
 
 
 if SERVICE_NAME.startswith('opbeans-ruby'):
-    @scenario(weight=2)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_log_error(session):
         async with session.get(join(SERVER_URL, 'log-error')) as resp:
             assert resp.status == 500
 
 
-    @scenario(weight=2)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_log_message(session):
         async with session.get(join(SERVER_URL, 'log-message')) as resp:
             assert resp.status == 500
 
 
-    @scenario(weight=1)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_is_it_coffee_time_typo(session):
         async with session.get(join(SERVER_URL, 'is-it-coffee-time')) as resp:
             assert resp.status == 500
 
 
-    @scenario(weight=1)
+    @scenario(weight=ERROR_WEIGHT)
     async def scenario_throw_error(session):
         async with session.get(join(SERVER_URL, 'throw-error')) as resp:
             assert resp.status == 500

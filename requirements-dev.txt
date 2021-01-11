@@ -1,0 +1,5 @@
+-r requirements.txt
+pytest==6.2.1
+pytest-flask==1.1.0
+requests==2.25.1
+
