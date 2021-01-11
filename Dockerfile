@@ -21,7 +21,6 @@ RUN apt-get -qq update \
 COPY --from=0 /app /app
 ENV PATH="/app/venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
-ENV WS=0
 WORKDIR /app
 CMD ["honcho", "start"]
 ENTRYPOINT ["/app/entrypoint.sh"]
