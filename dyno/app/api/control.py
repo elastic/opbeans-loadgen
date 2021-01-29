@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
 import subprocess
 import signal
 
@@ -8,12 +7,13 @@ from pathlib import Path
 
 from . import bp
 import socketio
-from flask import request, abort
+from flask import request
 
 # TODO Pull this from config object instead
 DEBUG = os.environ.get('DYNO_DEBUG')
 
 """ Public HTTP methods """
+
 
 @bp.route('/start', methods=['POST'])
 def start_job() -> dict:
@@ -53,19 +53,25 @@ def start_job() -> dict:
         https://molotov.readthedocs.io/en/stable/cli/?highlight=workers#command-line-options
 
     error_weight : str
-        The relative "weight" of errors. Higher number result in the load generator
-        choosing to hit pages known to produce errors a higher percentage of the time.
-        This number is entirely arbitrary and is only relative to statically configured
-        weights in the scenario file itself.
+        The relative "weight" of errors. Higher number result in the load
+        generator choosing to hit pages known to produce errors a higher
+        percentage of the time.
+
+        This number is entirely arbitrary and is only relative to statically
+        configured weights in the scenario file itself.
 
     label_weight : str
-        In the case of the `dyno` scenario, a label_weight parameter can be passed which
-        increases the rate at which a given label is accessed. The label weight is controlled
-        via the `label_name` parameter. Does NOT work with scenarios other than `dyno`!
+        In the case of the `dyno` scenario, a label_weight parameter can be
+        passed which increases the rate at which a given label is accessed.
+
+        The label weight is controlled via the `label_name` parameter.
+
+        Does NOT work with scenarios other than `dyno`!
 
     label_name : str
-        Used in conjunction with `label_weight` to specify a label which should be hit at a higher
-        or lower rate, which is controlled by the `label_weight` parameters.
+        Used in conjunction with `label_weight` to specify a label which
+        should be hit at a higher or lower rate, which is controlled by the
+        `label_weight` parameters.
 
 
     Examples
@@ -132,6 +138,7 @@ def get_list() -> dict:
     """
     return JOB_STATUS
 
+
 @bp.route('/update', methods=['POST'])
 def update_job() -> dict:
     """
@@ -155,19 +162,23 @@ def update_job() -> dict:
         The number of workers the load generator should use. (Optional)
 
     error_weight : str
-        The relative "weight" of errors. Higher number result in the load generator
-        choosing to hit pages known to produce errors a higher percentage of the time.
-        This number is entirely arbitrary and is only relative to statically configured
-        weights in the scenario file itself. (Optional)
+        The relative "weight" of errors. Higher number result in the load
+        generator choosing to hit pages known to produce errors a higher
+        percentage of the time.
+
+        This number is entirely arbitrary and is only relative to statically
+        configured weights in the scenario file itself. (Optional)
 
     label_weight : str
-        In the case of the `dyno` scenario, a label_weight parameter can be passed which
-        increases the rate at which a given label is accessed. The label weight is controlled
-        via the `label_name` parameter. Does NOT work with scenarios other than `dyno`! (Optional)
+        In the case of the `dyno` scenario, a label_weight parameter can be
+        passed which increases the rate at which a given label is accessed.
+        The label weight is controlled via the `label_name` parameter.
+        Does NOT work with scenarios other than `dyno`! (Optional)
 
     label_name : str
-        Used in conjunction with `label_weight` to specify a label which should be hit at a higher
-        or lower rate, which is controlled by the `label_weight` parameters.
+        Used in conjunction with `label_weight` to specify a label which
+        should be hit at a higher or lower rate, which is controlled by
+        the `label_weight` parameters.
 
     Returns
     -------
@@ -263,21 +274,21 @@ def get_scenarios() -> dict:
 
     Note
     ----
-    To add a new scenario to the application, it must be added to the scenarios/
-    folder before it appears in this list.
-    
+    To add a new scenario to the application, it must be added to the
+    scenarios/ folder before it appears in this list.
+
     Examples
     --------
-	❯ curl -s http://localhost:8999/api/scenarios|jq
-	{
-	  "scenarios": [
-	    "dyno",
-	    "molotov_scenarios",
-	    "high_error_rates"
-	  ]
-	}
+    ❯ curl -s http://localhost:8999/api/scenarios|jq
+    {
+        "scenarios": [
+            "dyno",
+            "molotov_scenarios",
+            "high_error_rates"
+        ]
+    }
     """
-    cur_dir = os.path.dirname(os.path.realpath(__file__)) 
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
     scenario_dir = os.path.join(cur_dir, "../../../scenarios")
 
     files = os.listdir(scenario_dir)
@@ -293,6 +304,7 @@ def get_scenarios() -> dict:
 
 
 """ Private helper functions """
+
 
 def _construct_toxi_env(
         job: str,
@@ -315,7 +327,8 @@ def _construct_toxi_env(
     Parameters
     ----------
     job : str
-       The name of the job. Should be passed without including the `opbeans-` prefix.
+       The name of the job. Should be passed without including the `opbeans-`
+       prefix.
 
     port : str
         The port for the environment. Can also be passed as a int type.
@@ -325,32 +338,39 @@ def _construct_toxi_env(
         the name and NOT as a filename.
 
     error_weight : int
-        The relative "weight" of errors. Higher number result in the load generator
-        choosing to hit pages known to produce errors a higher percentage of the time.
-        This number is entirely arbitrary and is only relative to statically configured
-        weights in the scenario file itself.
+        The relative "weight" of errors. Higher number result in the load
+        generator choosing to hit pages known to produce errors a higher
+        percentage of the time.
+
+        This number is entirely arbitrary and is only relative to statically
+        configured weights in the scenario file itself.
 
     label_weight : int
-        In the case of the `dyno` scenario, a label_weight parameter can be passed which
-        increases the rate at which a given label is accessed. The label weight is controlled
-        via the `label_name` parameter. Does NOT work with scenarios other than `dyno`!
+        In the case of the `dyno` scenario, a label_weight parameter can be
+        passed which increases the rate at which a given label is accessed.
+        The label weight is controlled via the `label_name` parameter. Does
+        NOT work with scenarios other than `dyno`!
 
     label_name : str
-        Used in conjunction with `label_weight` to specify a label which should be hit at a higher
-        or lower rate, which is controlled by the `label_weight` parameters.
+        Used in conjunction with `label_weight` to specify a label which
+        should be hit at a higher or lower rate, which is controlled by the
+        `label_weight` parameters.
 
-    
     Returns
     -------
     dict
         Dictionary containing the environment keys and values
-   
+
     Examples
     --------
     Sample call showing just the required parameters
 
     >>> _construct_toxi_env('python', 9999, 'my_great-scenario', 99)
-    {'OPBEANS_BASE_URL': 'http://toxi:9999', 'OPBEANS_NAME': 'opbeans-python', 'ERROR_WEIGHT': '99'}
+    {
+        'OPBEANS_BASE_URL': 'http://toxi:9999',
+        'OPBEANS_NAME': 'opbeans-python',
+        'ERROR_WEIGHT': '99'
+    }
 
     """
     toxi_env = os.environ.copy()
@@ -446,13 +466,15 @@ def _launch_job(job: str, config: dict) -> None:
     >>> update_status('python', config)
     """
     if DEBUG:
-        print('Job launch received: ',
-                config['job'], config['port'],
-                config['duration'],
-                config['delay'],
-                config['workers'],
-                config['scenario'],
-                config['error_weight'])
+        print(
+            'Job launch received: ',
+            config['job'], config['port'],
+            config['duration'],
+            config['delay'],
+            config['workers'],
+            config['scenario'],
+            config['error_weight']
+        )
 
     if DEBUG:
         cmd = ['sleep', '10']
@@ -485,13 +507,14 @@ def _launch_job(job: str, config: dict) -> None:
             config['error_weight']
             )
 
-    _update_status(job, config) 
+    _update_status(job, config)
 
     # “I may not have gone where I intended to go, but I think I have ended up
     # where I needed to be.”
     # ― Douglas Adams, The Long Dark Tea-Time of the Soul
     p = subprocess.Popen(cmd, cwd="../", preexec_fn=os.setsid, env=toxi_env)
     JOB_MANAGER[job] = p
+
 
 def _stop_job(job: str) -> None:
     """
