@@ -16,7 +16,7 @@ DEBUG = os.environ.get('DYNO_DEBUG')
 """ Public HTTP methods """
 
 @bp.route('/start', methods=['POST'])
-def start_job():
+def start_job() -> dict:
     """
     Start a load-generation job
 
@@ -97,7 +97,7 @@ def start_job():
 
 
 @bp.route('/list', methods=['GET'])
-def get_list():
+def get_list() -> dict:
     """
     Return the current status of all configured
     jobs
@@ -133,7 +133,7 @@ def get_list():
     return JOB_STATUS
 
 @bp.route('/update', methods=['POST'])
-def update_job():
+def update_job() -> dict:
     """
     Updates a job with a new configuration.
 
@@ -219,7 +219,7 @@ def update_job():
 
 
 @bp.route('/stop', methods=['GET'])
-def stop_job():
+def stop_job() -> dict:
     """
     Stop a load-generation job
 
@@ -248,7 +248,7 @@ def stop_job():
 
 
 @bp.route('/scenarios', methods=['GET'])
-def get_scenarios():
+def get_scenarios() -> dict:
     """
     Fetch a list of scenarios.
 
@@ -295,13 +295,13 @@ def get_scenarios():
 """ Private helper functions """
 
 def _construct_toxi_env(
-        job,
-        port,
-        scenario,
-        error_weight,
+        job: str,
+        port: str,
+        scenario: str,
+        error_weight: int,
         label_weight=None,
         label_name=None
-        ):
+        ) -> dict:
     """
     Construct a dictionary representing an Opbeans environment
     which is fronted by a Toxiproxy instance.
@@ -364,7 +364,7 @@ def _construct_toxi_env(
     return toxi_env
 
 
-def _update_status(job, config):
+def _update_status(job: str, config: dict) -> None:
     """
     Helper function for updating the status of a job
 
@@ -419,7 +419,7 @@ def _update_status(job, config):
     status['name'] = job
 
 
-def _launch_job(job, config):
+def _launch_job(job: str, config: dict) -> None:
     """
     Spawn a new load-generation job
 
@@ -493,7 +493,7 @@ def _launch_job(job, config):
     p = subprocess.Popen(cmd, cwd="../", preexec_fn=os.setsid, env=toxi_env)
     JOB_MANAGER[job] = p
 
-def _stop_job(job):
+def _stop_job(job: str) -> None:
     """
     Helper function for stopping a job
 
