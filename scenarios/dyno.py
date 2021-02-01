@@ -10,7 +10,8 @@ from molotov import scenario
 SERVER_URL = os.environ.get('OPBEANS_BASE_URL', 'http://localhost:8000')
 SERVICE_NAME = os.environ.get('OPBEANS_NAME', 'default')
 ERROR_WEIGHT = int(os.environ.get('ERROR_WEIGHT', 2))
-LABEL_WEIGHT = int(os.environ.get('LABEL_WEIGHT', 2))
+APP_LATENCY_WEIGHT = int(os.environ.get('APP_LATENCY_WEIGHT', 0))
+
 
 @scenario(weight=1)
 async def scenario_root(session):
@@ -38,19 +39,40 @@ async def scenario_products_top(session):
 
 @scenario(weight=1)
 async def scenario_products_id(session):
-    async with session.get(join(SERVER_URL, 'api', 'products', str(random.randint(1, 6)))) as resp:
+    async with session.get(
+        join(
+            SERVER_URL,
+            'api',
+            'products',
+            str(random.randint(1, 6))
+        )
+    ) as resp:
         assert resp.status == 200, resp.status
 
 
 @scenario(weight=6)
 async def scenario_products_id_customers(session):
-    async with session.get(join(SERVER_URL, 'api', 'products', str(random.randint(1, 6)), 'customers')) as resp:
+    async with session.get(
+        join(
+            SERVER_URL,
+            'api',
+            'products',
+            str(random.randint(1, 6)),
+            'customers'
+        )
+    ) as resp:
         assert resp.status == 200, resp.status
 
 
 @scenario(weight=1)
 async def scenario_products_id_customers_limit(session):
-    async with session.get(join(SERVER_URL, 'api', 'products', str(random.randint(1, 6)), 'customers?limit=%d' % (random.randint(5, 11) * 10))) as resp:
+    async with session.get(
+        join(
+            SERVER_URL,
+            'api',
+            'products',
+            str(random.randint(1, 6)),
+            'customers?limit=%d' % (random.randint(5, 11) * 10))) as resp:
         assert resp.status == 200, resp.status
 
 
@@ -62,7 +84,14 @@ async def scenario_types(session):
 
 @scenario(weight=8)
 async def scenario_types_id(session):
-    async with session.get(join(SERVER_URL, 'api', 'types', str(random.randint(1, 3)))) as resp:
+    async with session.get(
+        join(
+            SERVER_URL,
+            'api',
+            'types',
+            str(random.randint(1, 3))
+        )
+    ) as resp:
         assert resp.status == 200, resp.status
 
 
@@ -74,13 +103,27 @@ async def scenario_customers(session):
 
 @scenario(weight=1)
 async def scenario_customers_id(session):
-    async with session.get(join(SERVER_URL, 'api', 'customers', str(random.randint(1, 1000)))) as resp:
+    async with session.get(
+        join(
+            SERVER_URL,
+            'api',
+            'customers',
+            str(random.randint(1, 1000))
+            )
+    ) as resp:
         assert resp.status == 200, resp.status
 
 
 @scenario(weight=8)
 async def scenario_wrong_customers_id(session):
-    async with session.get(join(SERVER_URL, 'api', 'customers', str(random.randint(5000, 10000)))) as resp:
+    async with session.get(
+        join(
+            SERVER_URL,
+            'api',
+            'customers',
+            str(random.randint(5000, 10000))
+        )
+    ) as resp:
         assert resp.status == 404, resp.status
 
 
@@ -92,7 +135,14 @@ async def scenario_orders(session):
 
 @scenario(weight=1)
 async def scenario_orders_id(session):
-    async with session.get(join(SERVER_URL, 'api', 'orders', str(random.randint(1, 1000)))) as resp:
+    async with session.get(
+        join(
+            SERVER_URL,
+            'api',
+            'orders',
+            str(random.randint(1, 1000))
+        )
+    ) as resp:
         assert resp.status == 200, resp.status
 
 
@@ -107,19 +157,42 @@ async def scenario_orders_post(session):
             'id': random.randint(1, 6),
             'amount': random.randint(1, 4)
         })
-    async with session.post(join(SERVER_URL, 'api', 'orders'), data=json.dumps(data)) as resp:
+    async with session.post(
+        join(
+            SERVER_URL,
+            'api',
+            'orders'
+         ),
+        data=json.dumps(data)
+    ) as resp:
         assert resp.status == 200, resp.status
 
-
-if SERVICE_NAME.startswith(tuple(['opbeans-python', 'opbeans-go'])):
-
-    # Special scenario to manipulate the /labeldelay endpoint
-    @scenario(weight=LABEL_WEIGHT)
-    async def scenario_label_endpoint(session):
-        async with session.get(join(SERVER_URL, 'labeldely', '?delay=',  random.randint(1, 1000), '&label=', os.environ.get('LABEL_NAME', 'my_label'))) as resp:
+if SERVICE_NAME.startswith('opbeans-python'):
+    @scenario(weight=APP_LATENCY_WEIGHT)
+    async def scenario_brower_latency_distribution(session):
+        async with session.get(
+            join(
+                SERVER_URL,
+                'labeldelay',
+                '?delay=',
+                random.randint(
+                    os.environ.get('APP_LATENCY_LOWER_BOUND', 1),
+                    os.environ.get('APP_LATENCY_UPPER_BOUND', 1000)
+                ),
+                '&label=',
+                os.environ.get('APP_LATENCY_LABEL', 'browser_latency_delay')
+            ),
+            headers={
+                'User-Agent': os.environ.get(
+                    'APP_LATENCY_USER_AGENT',
+                    'Safari/531.21.10'
+                    )
+                }
+        ) as resp:
             assert resp.status == 200, resp.status
 
 
+if SERVICE_NAME.startswith(tuple(['opbeans-python', 'opbeans-go'])):
     @scenario(weight=ERROR_WEIGHT)
     async def scenario_oopsie(session):
         async with session.get(join(SERVER_URL, 'oopsie')) as resp:
@@ -141,66 +214,67 @@ if SERVICE_NAME.startswith(tuple(['opbeans-python', 'opbeans-go'])):
             filename='data.csv',
             content_type='text/plain'
         )
-        async with session.post(join(SERVER_URL, 'api', 'orders', 'csv'), data=data) as resp:
+        async with session.post(
+            join(
+                SERVER_URL,
+                'api',
+                'orders',
+                'csv'
+            ),
+            data=data
+        ) as resp:
             assert resp.status == 200, resp.status
 
 
 if SERVICE_NAME.startswith('opbeans-node'):
     @scenario(weight=ERROR_WEIGHT)
-    async def scenario_log_error(session):
+    async def scenario_log_error_node(session):
         async with session.get(join(SERVER_URL, 'log-error')) as resp:
             assert resp.status == 500
 
-
     @scenario(weight=ERROR_WEIGHT)
-    async def scenario_log_message(session):
+    async def scenario_log_message_node(session):
         async with session.get(join(SERVER_URL, 'log-message')) as resp:
             assert resp.status == 500
 
-
     @scenario(weight=ERROR_WEIGHT)
-    async def scenario_is_it_coffee_time_typo(session):
+    async def scenario_is_it_coffee_time_typo_node(session):
         async with session.get(join(SERVER_URL, 'is-it-coffee-time')) as resp:
             assert resp.status == 500
 
-
     @scenario(weight=ERROR_WEIGHT)
-    async def scenario_throw_error(session):
+    async def scenario_throw_error_node(session):
         async with session.get(join(SERVER_URL, 'throw-error')) as resp:
             assert resp.status == 500
 
-
     @scenario(weight=os.environ['ERROR_WEIGHT'])
-    async def scenario_throw_error_async(session):
+    async def scenario_throw_error_async_node(session):
         async with session.get(join(SERVER_URL, 'throw-async-error')) as resp:
             assert resp.status == 200
 
 
 if SERVICE_NAME.startswith('opbeans-ruby'):
     @scenario(weight=ERROR_WEIGHT)
-    async def scenario_log_error(session):
+    async def scenario_log_error_ruby(session):
         async with session.get(join(SERVER_URL, 'log-error')) as resp:
             assert resp.status == 500
 
-
     @scenario(weight=ERROR_WEIGHT)
-    async def scenario_log_message(session):
+    async def scenario_log_message_ruby(session):
         async with session.get(join(SERVER_URL, 'log-message')) as resp:
             assert resp.status == 500
 
-
     @scenario(weight=ERROR_WEIGHT)
-    async def scenario_is_it_coffee_time_typo(session):
+    async def scenario_is_it_coffee_time_typo_ruby(session):
         async with session.get(join(SERVER_URL, 'is-it-coffee-time')) as resp:
             assert resp.status == 500
 
-
     @scenario(weight=ERROR_WEIGHT)
-    async def scenario_throw_error(session):
+    async def scenario_throw_error_ruby(session):
         async with session.get(join(SERVER_URL, 'throw-error')) as resp:
             assert resp.status == 500
 
 
 def join(base_url, *fragments):
-        path = '/'.join(fragments)
-        return urljoin(base_url, path)
+    path = '/'.join(fragments)
+    return urljoin(base_url, path)

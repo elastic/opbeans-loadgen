@@ -60,19 +60,24 @@ def start_job() -> dict:
         This number is entirely arbitrary and is only relative to statically
         configured weights in the scenario file itself.
 
-    label_weight : str
-        In the case of the `dyno` scenario, a label_weight parameter can be
-        passed which increases the rate at which a given label is accessed.
-
-        The label weight is controlled via the `label_name` parameter.
+    app_latency_weight : str
+        In the case of the `dyno` scenario, an app_latency_weight
+        parameter can be passed which increases the rate at which a given
+        label is accessed.
 
         Does NOT work with scenarios other than `dyno`!
 
-    label_name : str
-        Used in conjunction with `label_weight` to specify a label which
-        should be hit at a higher or lower rate, which is controlled by the
-        `label_weight` parameters.
+    app_latency_label : str
+        Used in conjunction with `app_latency_weightr` to specify a
+        label which should be hit at a higher or lower rate.
 
+    app_latency_lower_bound : int
+        The lower bound of latency which should be applied to requests which
+        hit the delayed endpoint
+
+    app_latency_upper_bound : int
+        The upper bound of latency which should be applied to requests which
+        hit the delayed endpoint
 
     Examples
     --------
@@ -88,8 +93,10 @@ def start_job() -> dict:
             'delay': r.get('delay', "0.600"),
             'workers': r.get('workers', "3"),
             'error_weight': r.get('error_weight', "0"),
-            'label_weight': r.get('label_weight', "2"),
-            'label_name': r.get('label_name', 'foo_label')
+            'app_latency_weight': r.get('app_latency_weight', "0"),
+            'app_latency_label': r.get('app_latency_label', 'dyno_latency'), # noqa
+            'app_latency_lower_bound': r.get('app_latency_lower_bound', 1),  # noqa
+            'app_latency_upper_bound': r.get('app_latency_upper_bound', 1000),  # noqa
             }
 
     job = job.replace('opbeans-', '')
@@ -126,8 +133,10 @@ def get_list() -> dict:
         "delay": "0.600",
         "duration": "31536000",
         "error_weight": "0",
-        "label_name": "foo_label",
-        "label_weight": "2",
+        "app_latency_label": "dyno_delay",
+        "app_latency_weight": "2",
+        "app_latency_lower_bound": "1",
+        "app_latency_upper_bound": "1000",
         "name": "python",
         "port": "8000",
         "running": false,
@@ -169,16 +178,25 @@ def update_job() -> dict:
         This number is entirely arbitrary and is only relative to statically
         configured weights in the scenario file itself. (Optional)
 
-    label_weight : str
-        In the case of the `dyno` scenario, a label_weight parameter can be
-        passed which increases the rate at which a given label is accessed.
-        The label weight is controlled via the `label_name` parameter.
+    app_latency_weight : str
+        In the case of the `dyno` scenario, an `app_latency_weight`
+        parameter can be passed which increases the rate at which a given
+        label is accessed.
+
         Does NOT work with scenarios other than `dyno`! (Optional)
 
-    label_name : str
-        Used in conjunction with `label_weight` to specify a label which
+    app_latency_label : str
+        Used in conjunction with `app_latency_eight` to specify a label which
         should be hit at a higher or lower rate, which is controlled by
-        the `label_weight` parameters.
+        the `app_latency_weight` parameter.
+
+    app_latency_lower_bound : int
+        The lower bound of latency which should be applied to requests which
+        hit the delayed endpoint
+
+    app_latency_upper_bound : int
+        The upper bound of latency which should be applied to requests which
+        hit the delayed endpoint
 
     Returns
     -------
@@ -206,7 +224,11 @@ def update_job() -> dict:
                 'delay': "0.600",
                 "scenario": "molotov_scenarios",
                 "workers": r.get('workers', "3"),
-                "error_weight": r.get('error_weight', "0")
+                "error_weight": r.get('error_weight', "0"),
+                "app_latency_weight": r.get('app_latency_weight', 0),
+                "app_latency_label": r.get("app_latency_label", "dyno_app_latency"),  # noqa
+                "app_latency_lower_bound": r.get("app_latency_lower_bound", 1),
+                "app_latency_upper_bound": r.get("app_latency_upper_bound", 1000)  # noqa
                 }
         return {}
 
@@ -216,10 +238,14 @@ def update_job() -> dict:
         config['workers'] = r['workers']
     if 'error_weight' in r:
         config['error_weight'] = r['error_weight']
-    if 'label_weight' in r:
-        config['label_weight'] = r['label_weight']
-    if 'label_name' in r:
-        config['label_name'] = r['label_name']
+    if 'app_latency_weight' in r:
+        config['app_latency_weight'] = r['app_latency_weight']
+    if 'app_latency_label' in r:
+        config['app_latency_label'] = r['app_latency_label']
+    if 'app_latency_lower_bound' in r:
+        config['app_latency_lower_bound'] = r['app_latency_lower_bound']
+    if 'app_latency_upper_bound' in r:
+        config['app_latency_upper_bound'] = r['app_latency_upper_bound']
     _stop_job(job)
 
     if DEBUG:
@@ -256,6 +282,35 @@ def stop_job() -> dict:
     job = job.replace('opbeans-', '')
     _stop_job(job)
     return {}
+
+
+@bp.route('/splays', methods=['GET'])
+def get_splays() -> dict:
+    """
+    Fetch a list of splays
+
+    Exposed via HTTP at /api/splays
+    Supported HTTP methods: GET
+
+    Returns
+    -------
+    dict
+        A dictionary containing a list of possible splay. A splay
+        is a property across which delayed requests are distributed.
+
+    Examples
+    --------
+    ❯ curl -s http://localhost:8999/api/splays|jq
+    {
+        "splays": [
+            "User-agent: Safari",
+            "IP addresses: 10.0.0.0/8"
+        ]
+    }
+    """
+    # Fixed for the time being
+    ret = {'splays': ['User-Agent: Safari']}
+    return ret
 
 
 @bp.route('/scenarios', methods=['GET'])
@@ -311,8 +366,11 @@ def _construct_toxi_env(
         port: str,
         scenario: str,
         error_weight: int,
-        label_weight=None,
-        label_name=None
+        app_latency_weight=None,
+        app_latency_label=None,
+        app_latency_lower_bound=None,
+        app_latency_upper_bound=None,
+
         ) -> dict:
     """
     Construct a dictionary representing an Opbeans environment
@@ -345,16 +403,28 @@ def _construct_toxi_env(
         This number is entirely arbitrary and is only relative to statically
         configured weights in the scenario file itself.
 
-    label_weight : int
-        In the case of the `dyno` scenario, a label_weight parameter can be
-        passed which increases the rate at which a given label is accessed.
-        The label weight is controlled via the `label_name` parameter. Does
-        NOT work with scenarios other than `dyno`!
+    app_latency_weight : int
+        In the case of the `dyno` scenario, the app_latency_weight parameter
+        can be passed which increases the rate at which an endpoint which
+        artifically introduces latency is hit.
 
-    label_name : str
-        Used in conjunction with `label_weight` to specify a label which
-        should be hit at a higher or lower rate, which is controlled by the
-        `label_weight` parameters.
+    app_latency_label : str
+        Used in conjunction with `app_latency_weight` to specify a label which
+        should be applied to latent requests.
+
+    app_latency_lower_bound : int
+        Used in conjunction with `app_latency_weight`, this parameter
+        specifies the lower bound for latency. Requests will never be
+        less latent than this value.
+
+    app_latency_upper_bound : str
+        Used in conjunction with `app_latency_weight`, this parameter
+        specifies the upper bound for latency. Requests will never by (much)
+        more latent than this value.
+
+    app_latency_user_agent : str
+        Used in conjunction with `app_latency_weight`, this parameter
+        specifies a user agent for the latent requests.
 
     Returns
     -------
@@ -377,10 +447,14 @@ def _construct_toxi_env(
     toxi_env['OPBEANS_BASE_URL'] = "http://toxi:{}".format(port)
     toxi_env['OPBEANS_NAME'] = "opbeans-" + job
     toxi_env['ERROR_WEIGHT'] = str(error_weight)
-
-    if scenario == 'dyno':
-        toxi_env['LABEL_WEIGHT'] = str(label_weight)
-        toxi_env['LABEL_NAME'] = label_name
+    if app_latency_weight:
+        toxi_env['APP_LATENCY_WEIGHT'] = str(app_latency_weight)
+    if app_latency_label:
+        toxi_env['APP_LATENCY_LABEL'] = app_latency_label
+    if app_latency_lower_bound:
+        toxi_env['APP_LATENCY_LOWER_BOUND'] = str(app_latency_lower_bound)
+    if app_latency_upper_bound:
+        toxi_env['APP_LATENCY_UPPER_BOUND'] = str(app_latency_upper_bound)
     return toxi_env
 
 
@@ -413,8 +487,9 @@ def _update_status(job: str, config: dict) -> None:
     --------
     >>> config = {'duration': '90', 'delay': '91', \
             'scenario': 'dyno', 'workers': '92',\
-            'error_weight': '93', 'port': '95',
-            'label_weight': '96','label_name': '99'}
+            'error_weight': '93', 'port': '95', \
+            'app_latency_weight': '96','app_latency_label': 'my_label', \
+            'app_latency_lower_bound': 1,'app_latency_upper_bound': 1000}
     >>> update_status('python', config)
     """
     if job not in JOB_STATUS:
@@ -424,7 +499,11 @@ def _update_status(job: str, config: dict) -> None:
                 'delay': "0.600",
                 "scenario": "molotov_scenarios",
                 "workers": "3",
-                "error_weight": "0"
+                "error_weight": "0",
+                "app_latency_weight": "0",
+                "app_latency_label": "dyno_app_latency",
+                "app_latency_lower_bound": "1",
+                "app_latency_upper_bound": "1000"
                 }
     status = JOB_STATUS[job]
     status['running'] = True
@@ -434,8 +513,10 @@ def _update_status(job: str, config: dict) -> None:
     status['workers'] = config['workers']
     status['error_weight'] = config['error_weight']
     status['port'] = config['port']
-    status['label_weight'] = config.get('label_weight')
-    status['label_name'] = config.get('label_name')
+    status['app_latency_weight'] = config.get('app_latency_weight')
+    status['app_latency_label'] = config.get('app_latency_label')
+    status['app_latency_lower_bound'] = config.get('app_latency_lower_bound')
+    status['app_latency_upper_bound'] = config.get('app_latency_upper_bound')
     status['name'] = job
 
 
@@ -467,13 +548,7 @@ def _launch_job(job: str, config: dict) -> None:
     """
     if DEBUG:
         print(
-            'Job launch received: ',
-            config['job'], config['port'],
-            config['duration'],
-            config['delay'],
-            config['workers'],
-            config['scenario'],
-            config['error_weight']
+            'Job launch received: ', config
         )
 
     if DEBUG:
@@ -504,7 +579,14 @@ def _launch_job(job: str, config: dict) -> None:
             job,
             config['port'],
             config['scenario'],
-            config['error_weight']
+            config['error_weight'],
+            # TODO These are optional so that we don't
+            # break backward compatability with older clients.
+            # Eventually the lookup fallbacks can be removed.
+            config.get('app_latency_weight'),
+            config.get('app_latency_label'),
+            config.get('app_latency_lower_bound'),
+            config.get('app_latency_upper_bound'),
             )
 
     _update_status(job, config)

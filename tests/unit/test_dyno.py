@@ -23,6 +23,7 @@ import dyno.app.api.control
 from unittest import mock
 from flask import url_for
 
+
 def test_scenarios(client, scenarios):
     """
     GIVEN an HTTP client
@@ -57,10 +58,13 @@ def test_start(client):
                 'workers': '3',
                 'scenario': 'scenarios/test_scenario.py',
                 'error_weight': '0',
-                'label_weight': '2',
-                'label_name': 'foo_label'
+                'app_latency_weight': '0',
+                'app_latency_label': 'dyno_latency',
+                'app_latency_lower_bound': 1,
+                'app_latency_upper_bound': 1000
                 })
     assert res.json == {}
+
 
 def test_update_no_job(client):
     """
@@ -70,6 +74,7 @@ def test_update_no_job(client):
     """
     res = client.post(url_for('api.update_job'))
     assert res.status_code == 400
+
 
 def test_update(client, job_status):
     """
@@ -81,13 +86,15 @@ def test_update(client, job_status):
             'job': 'python',
             'workers': 990,
             'error_weight': 991,
-            'label_weight': 992,
-            'label_name': 'fake_label_name'
+            'app_latency_weight': 661,
+            'app_latency_label': 'fake_label_name',
+            'app_latency_lower_bound': 699,
+            'app_latency_upper_bound': 771
             }
     with mock.patch.dict('dyno.app.api.control.JOB_STATUS', job_status):
         with mock.patch('dyno.app.api.control._stop_job') as stop_job_mock:
-            with mock.patch('dyno.app.api.control._launch_job') as launch_job_mock:
-                with mock.patch('dyno.app.api.control._update_status') as update_status_mock:
+            with mock.patch('dyno.app.api.control._launch_job') as launch_job_mock:  # noqa
+                with mock.patch('dyno.app.api.control._update_status') as update_status_mock:  # noqa
                     client.post(url_for('api.update_job'), json=post_data)
 
     stop_job_mock.assert_called_with('python')
@@ -96,17 +103,24 @@ def test_update(client, job_status):
             {
                 'url': 'http://opbeans-python:3000',
                 'name': 'opbeans-python',
-                'running': False, 'port': '990',
-                'duration': '991', 'delay': '992',
-                'workers': 990, 'scenario': 'fake_scenario',
-                'error_weight': 991, 'label_weight': 992,
-                'label_name': 'fake_label_name',
+                'running': False,
+                'port': '990',
+                'duration': '991',
+                'delay': '992',
+                'workers': 990,
+                'scenario': 'fake_scenario',
+                'error_weight': 991,
+                'app_latency_weight': 661,
+                'app_latency_label': 'fake_label_name',
+                'app_latency_lower_bound': 699,
+                'app_latency_upper_bound': 771,
                 'p': None
                 }
             )
 
-    launch_job_mock.assert_has_calls( [caller_stub] )
-    update_status_mock.assert_has_calls( [caller_stub] )
+    launch_job_mock.assert_has_calls([caller_stub])
+    update_status_mock.assert_has_calls([caller_stub])
+
 
 def test_stop(client):
     """
@@ -119,14 +133,21 @@ def test_stop(client):
     proc_mock.pid = 99999
     query = {'job': 'test-job'}
     with mock.patch('socketio.client.Client.emit') as fake_socketio:
-        with mock.patch.dict('dyno.app.api.control.JOB_STATUS', {'test-job': {'running': False}}):
-            with mock.patch.dict('dyno.app.api.control.JOB_MANAGER', {'test-job': proc_mock}):
+        with mock.patch.dict('dyno.app.api.control.JOB_STATUS', {'test-job': {'running': False}}):  # noqa
+            with mock.patch.dict('dyno.app.api.control.JOB_MANAGER', {'test-job': proc_mock}):  # noqa
                 with pid_mock:
                     with mock.patch('os.killpg') as kill_mock:
-                        res = client.get(url_for('api.stop_job'), query_string=query)
-    fake_socketio.assert_called_with('service_state', {'data': {'test-job': 'stop'}})
+                        res = client.get(
+                            url_for('api.stop_job'),
+                            query_string=query
+                            )
+    fake_socketio.assert_called_with(
+        'service_state',
+        {'data': {'test-job': 'stop'}}
+        )
     kill_mock.assert_called()
     assert res.json == {}
+
 
 def test_list(client, job_status):
     """
@@ -137,11 +158,17 @@ def test_list(client, job_status):
     ret = client.get(url_for('api.get_list'))
     assert ret.json == {}
 
+
 @mock.patch('socketio.client.Client.emit')
 @mock.patch('dyno.app.api.control._construct_toxi_env')
 @mock.patch('dyno.app.api.control._update_status')
 @mock.patch('subprocess.Popen')
-def test_launch_job(proc_mock, update_status_mock, toxi_env_mock, socketio_mock):
+def test_launch_job(
+    proc_mock,
+    update_status_mock,
+    toxi_env_mock,
+    socketio_mock
+):
     """
     GIVEN a sane set of arguments
     WHEN the _launc_job() function is called
@@ -155,10 +182,17 @@ def test_launch_job(proc_mock, update_status_mock, toxi_env_mock, socketio_mock)
             'delay': '992',
             'workers': '993',
             'scenario': 'fake_scenario',
-            'error_weight':' 994'
+            'error_weight': '994',
+            'app_latency_weight': 995,
+            'app_latency_label': 'fake_latency_label',
+            'app_latency_lower_bound': 69,
+            'app_latency_upper_bound': 70
             }
         )
-    assert socketio_mock.called_with('service_state', {'data': {'python': 'start'}})
+    assert socketio_mock.called_with(
+        'service_state',
+        {'data': {'python': 'start'}}
+    )
     assert toxi_env_mock.called_with('python', '990', 'fake_scenario', '994')
     assert update_status_mock.called_with(
             'python',
@@ -190,7 +224,6 @@ def test_launch_job(proc_mock, update_status_mock, toxi_env_mock, socketio_mock)
     [0]
 
 
-
 @mock.patch.dict('os.environ', {}, clear=True)  # Assure a clean env
 def test_construct_toxi_env():
     """
@@ -198,7 +231,12 @@ def test_construct_toxi_env():
     WHEN we ask for a dictionary describing the environment
     THEN the returned dictionary reflects the configured environment
     """
-    ret = dyno.app.api.control._construct_toxi_env('fake-job', 9999, 'fake_scenario', 99)
+    ret = dyno.app.api.control._construct_toxi_env(
+        'fake-job',
+        9999,
+        'fake_scenario',
+        99
+        )
     assert ret == {
             'OPBEANS_BASE_URL': "http://toxi:9999",
             'OPBEANS_NAME': 'opbeans-fake-job',
