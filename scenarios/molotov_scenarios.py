@@ -2,7 +2,6 @@ import io
 import os
 import random
 import json
-import pprint
 from urllib.parse import urljoin
 
 from aiohttp import FormData
@@ -117,7 +116,6 @@ async def scenario_orders_post(session):
 if SERVICE_NAME.startswith('opbeans-python'):
     @scenario(weight=APP_LATENCY_WEIGHT)
     async def scenario_brower_latency_distribution(session):
-        pprint.pprint(os.environ)
         async with session.get(
             join(
                 SERVER_URL,

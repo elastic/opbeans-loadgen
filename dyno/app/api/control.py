@@ -417,7 +417,7 @@ def _construct_toxi_env(
         specifies the lower bound for latency. Requests will never be
         less latent than this value.
 
-    app_latency_upper_bound : str
+    app_latency_upper_bound : int
         Used in conjunction with `app_latency_weight`, this parameter
         specifies the upper bound for latency. Requests will never by (much)
         more latent than this value.
