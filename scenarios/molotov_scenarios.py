@@ -10,6 +10,7 @@ from molotov import scenario
 SERVER_URL = os.environ.get('OPBEANS_BASE_URL', 'http://localhost:8000')
 SERVICE_NAME = os.environ.get('OPBEANS_NAME', 'default')
 ERROR_WEIGHT = int(os.environ.get('ERROR_WEIGHT', 2))
+APP_LATENCY_WEIGHT = int(float(os.environ.get('APP_LATENCY_WEIGHT', 0)))
 
 print("SERVICE NAME", SERVICE_NAME)
 print("ERROR WEIGHT", ERROR_WEIGHT)
@@ -111,6 +112,30 @@ async def scenario_orders_post(session):
     async with session.post(join(SERVER_URL, 'api', 'orders'), data=json.dumps(data)) as resp:
         assert resp.status == 200, resp.status
 
+
+if SERVICE_NAME.startswith('opbeans-python'):
+    @scenario(weight=APP_LATENCY_WEIGHT)
+    async def scenario_brower_latency_distribution(session):
+        async with session.get(
+            join(
+                SERVER_URL,
+                'labeldelay' +
+                '?delay=' +
+                str(random.randint(
+                    int(float(os.environ.get('APP_LATENCY_LOWER_BOUND', 1))),
+                    int(float(os.environ.get('APP_LATENCY_UPPER_BOUND', 1000)))
+                )) +
+                '&label=' +
+                os.environ.get('APP_LATENCY_LABEL', 'browser_latency_delay')
+            ),
+            headers={
+                'User-Agent': os.environ.get(
+                    'APP_LATENCY_USER_AGENT',
+                    'Safari/531.21.10'
+                    )
+                }
+        ) as resp:
+            assert resp.status == 200, resp.status
 
 if SERVICE_NAME.startswith(tuple(['opbeans-python', 'opbeans-go'])):
     @scenario(weight=ERROR_WEIGHT)

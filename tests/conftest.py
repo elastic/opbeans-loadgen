@@ -23,15 +23,17 @@ import os
 import pytest
 import dyno.app
 
+
 @pytest.fixture
 def default_environment(monkeypatch):
     """
     Set up default variables to produce a functional
     test environment
     """
-    monkeypatch.setenv("OPBEANS_URLS", "opbeans-python:http://opbeans-python:3000")
+    monkeypatch.setenv("OPBEANS_URLS", "opbeans-python:http://opbeans-python:3000")  # noqa
     monkeypatch.setenv("OPBEANS_RPMS", "opbeans-python:500")
     monkeypatch.setenv("OPBEANS_RLS", "opbeans-python:500")
+
 
 @pytest.fixture(scope="session")
 def app():
@@ -45,6 +47,7 @@ def app():
     dyno_app = dyno.app.create_app(app_env='test')
     return dyno_app
 
+
 @pytest.fixture
 def scenarios():
     """
@@ -56,6 +59,7 @@ def scenarios():
     scenario_files = os.listdir(fixture_path)
     scenarios = [scenario.replace('.py', '') for scenario in scenario_files]
     return scenarios
+
 
 @pytest.fixture
 def procfile():
@@ -87,8 +91,10 @@ def job_status():
                 'workers': '993',
                 'scenario': 'fake_scenario',
                 'error_weight': '994',
-                'label_weight': '995',
-                'label_name': 'fake_label_name',
-                'p': None}
+                'app_latency_weight': 661,
+                'app_latency_label': 'fake_label_name',
+                'app_latency_lower_bound': 699,
+                'app_latency_upper_bound': 771,
+                'p': None
+                }
             }
-
