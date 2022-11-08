@@ -1,8 +1,8 @@
-[![Build Status](https://apm-ci.elastic.co/buildStatus/icon?job=apm-agent-python%2Fopbeans-loadgen-mbp%2Fmaster)](https://apm-ci.elastic.co/job/apm-agent-python/job/opbeans-loadgen-mbp/job/master/)
+[![Build Status](https://apm-ci.elastic.co/buildStatus/icon?job=apm-agent-python%2Fopbeans-loadgen-mbp%2Fmain)](https://apm-ci.elastic.co/job/apm-agent-python/job/opbeans-loadgen-mbp/job/main/)
 
 # Dyno Web Interface for Opbeans Load Generator
 
-The Dyno Web Interface is designed for use with the APM Integration Test Suite when it is run in Dyno mode using the `--dyno` flag. 
+The Dyno Web Interface is designed for use with the APM Integration Test Suite when it is run in Dyno mode using the `--dyno` flag.
 
 When this flag is present, the Opbeans Load Generator is included as a running service and the Dyno web service is automatically enabled, allowing for on-demand load-generation to be controlled both programatically and directly by a user from a web interface.
 
@@ -27,7 +27,7 @@ When run as a part of the APM Integration Test Suite, the Dyno service also prov
 [SocketIO](https://socket.io/) is used to stream data about load-generation back to the client. In this application, SocketIO broadcasts are generally used in-lieu of direct returns when making requests to HTTP endpoints.
 
 ### Stats streaming
-To facilitate the realtime streaming of stats about load generation, the `statsd` option [is integrated with Molotov](https://molotov.readthedocs.io/en/stable/cli/). 
+To facilitate the realtime streaming of stats about load generation, the `statsd` option [is integrated with Molotov](https://molotov.readthedocs.io/en/stable/cli/).
 
 ## Scenarios
 
