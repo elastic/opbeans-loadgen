@@ -1,4 +1,4 @@
-[![Build Status](https://apm-ci.elastic.co/buildStatus/icon?job=apm-agent-python%2Fopbeans-loadgen-mbp%2Fmaster)](https://apm-ci.elastic.co/job/apm-agent-python/job/opbeans-loadgen-mbp/job/master/)
+[![Build Status](https://github.com/elastic/opbeans-loadgen/actions/workflows/test.yml/badge.svg)](https://github.com/elastic/opbeans-loadgen/actions/workflows/test.yml)
 
 # Opbeans Load Generator
 
@@ -18,7 +18,7 @@ Start the docker container with a list of base URLs to generate load on
     > docker run --rm -e OPBEANS_URLS=opbeans-node:http://opbeans-node:3000,opbeans-python:http://opbeans-python:3000 opbeans/opbeans-loadgen
 
 ## HTTP mode
-The use of HTTP mode was developed specifically as a load-generation component for use in the [APM Integration Test](https://github.com/elastic/apm-integration-testing) suite. 
+The use of HTTP mode was developed specifically as a load-generation component for use in the [APM Integration Test](https://github.com/elastic/apm-integration-testing) suite.
 
 Specifically, it is designed for use when the suite is launched using the `--dyno` flag, which enables user-controlled load-testing with the ability to manipulate the performance constraints of various services at-will.
 
