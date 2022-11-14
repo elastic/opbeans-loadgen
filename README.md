@@ -1,4 +1,4 @@
-[![Build Status](https://apm-ci.elastic.co/buildStatus/icon?job=apm-agent-python%2Fopbeans-loadgen-mbp%2Fmain)](https://apm-ci.elastic.co/job/apm-agent-python/job/opbeans-loadgen-mbp/job/main/)
+[![Build Status](https://github.com/elastic/opbeans-loadgen/actions/workflows/test.yml/badge.svg)](https://github.com/elastic/opbeans-loadgen/actions/workflows/test.yml)
 
 # Opbeans Load Generator
 
