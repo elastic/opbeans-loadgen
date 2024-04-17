@@ -4,7 +4,7 @@ WORKDIR /app
 RUN python -m venv /app/venv
 COPY requirements.txt /app/
 RUN /app/venv/bin/pip install wheel
-RUN /app/venv/bin/pip install -r requirements.txt
+RUN /app/venv/bin/pip install -r /app/requirements.txt
 
 COPY molotov_scenarios.py entrypoint.sh generate_procfile.py /app/
 COPY dyno /app/dyno
