@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.9
 
 WORKDIR /app
 RUN python -m venv /app/venv
@@ -10,7 +10,7 @@ COPY molotov_scenarios.py entrypoint.sh generate_procfile.py /app/
 COPY dyno /app/dyno
 COPY scenarios/ /app/scenarios
 
-FROM python:3.7-slim
+FROM python:3.9-slim
 ## Required as the slim version is too tiny
 RUN apt-get -qq update \
  && apt-get -qq install -y \
