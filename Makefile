@@ -19,7 +19,7 @@ bats: ## Install bats in the project itself
 	@git clone https://github.com/sstephenson/bats.git
 
 venv: requirements-dev.txt
-	test -d $(VENV) || virtualenv -q --python=$(PYTHON) $(VENV);\
+	test -d $(VENV) || $(PYTHON) -m venv $(VENV);\
 	. $(VENV)/bin/activate || exit 1;\
 	pip install -r requirements-dev.txt;\
 	touch $(VENV);\
