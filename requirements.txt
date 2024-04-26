@@ -11,11 +11,12 @@ yarl==1.2.6
 
 # Dyno
 gunicorn==22.0.0
-eventlet==0.29.1
+eventlet==0.36.1
 flask==1.1.2
 flask-socketio==4.3.2
 flask-cors==3.0.9
 itsdangerous==2.0.1
+dnspython==2.6.1
 
 ## Temporary pins for old flask
 Jinja2==2.11.3
