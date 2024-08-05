@@ -124,5 +124,5 @@ Assuming the workers were previously set at the default of two, this rougly doub
 Flask will produce output on standard out by default. When deployed as a part of the APM Integration Test suite, the following will tail logs for this service:
 
 ```bash
-docker-compose -f logs opbeans-load-generator
+docker compose -f logs opbeans-load-generator
 ```

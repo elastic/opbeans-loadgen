@@ -9,13 +9,13 @@ CONTAINER="opbeans-loadgen"
 
 @test "Build image" {
 	cd $BATS_TEST_DIRNAME/..
-	run docker-compose build
+	run docker compose build
 	assert_success
 }
 
 # Test Procfile-based run
 @test "Create test container [Procfile mode]" {
-	run docker-compose up -d
+	run docker compose up -d
 	assert_success
 }
 
@@ -32,13 +32,13 @@ CONTAINER="opbeans-loadgen"
 }
 
 @test "Clean test containers [Procfile mode]" {
-	run docker-compose down
+	run docker compose down
 	assert_success
 }
 
 # Test Dyno-based run
 @test "Create test container [Dyno mode]" {
-	run docker-compose --env-file $BATS_TEST_DIRNAME/dyno.env up -d
+	run docker compose --env-file $BATS_TEST_DIRNAME/dyno.env up -d
 	assert_success
 }
 
@@ -55,6 +55,6 @@ CONTAINER="opbeans-loadgen"
 }
 
 @test "Clean test containers [Dyno mode]" {
-	run docker-compose down
+	run docker compose down
 	assert_success
 }
